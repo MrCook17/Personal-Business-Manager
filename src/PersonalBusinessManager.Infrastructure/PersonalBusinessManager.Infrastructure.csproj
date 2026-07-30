@@ -6,6 +6,8 @@
 
   <ItemGroup>
     <PackageReference Include="Dapper" Version="2.1.79" />
+    <PackageReference Include="FluentMigrator.Runner.Core" Version="8.0.1" />
+    <PackageReference Include="FluentMigrator.Runner.MySql" Version="8.0.1" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.10" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.10" />
     <PackageReference Include="MySqlConnector" Version="2.6.1" />
@@ -14,7 +16,6 @@
   <ItemGroup>
     <Folder Include="Database\Sql\" />
     <Folder Include="Database\Transactions\" />
-    <Folder Include="Database\Migrations\" />
     <Folder Include="Database\Queries\" />
     <Folder Include="Database\Repositories\" />
     <Folder Include="Backups\" />

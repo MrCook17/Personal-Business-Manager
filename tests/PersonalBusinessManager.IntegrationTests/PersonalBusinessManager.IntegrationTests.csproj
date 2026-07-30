@@ -21,6 +21,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\PersonalBusinessManager.Core\PersonalBusinessManager.Core.csproj" />
     <ProjectReference Include="..\..\src\PersonalBusinessManager.Infrastructure\PersonalBusinessManager.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\tools\PersonalBusinessManager.DatabaseMigrator\PersonalBusinessManager.DatabaseMigrator.csproj" />
   </ItemGroup>
 
 </Project>

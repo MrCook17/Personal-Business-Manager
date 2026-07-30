@@ -8,4 +8,5 @@
   <Project Path="src/PersonalBusinessManager.WinForms/PersonalBusinessManager.WinForms.csproj" />
   <Project Path="tests/PersonalBusinessManager.Core.Tests/PersonalBusinessManager.Core.Tests.csproj" />
   <Project Path="tests/PersonalBusinessManager.IntegrationTests/PersonalBusinessManager.IntegrationTests.csproj" />
+  <Project Path="tools/PersonalBusinessManager.DatabaseMigrator/PersonalBusinessManager.DatabaseMigrator.csproj" />
 </Solution>

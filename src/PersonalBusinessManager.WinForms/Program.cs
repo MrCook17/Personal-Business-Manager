@@ -9,6 +9,9 @@ namespace PersonalBusinessManager.WinForms;
 
 internal static class Program
 {
+    private const string ConnectionStringEnvironmentVariable =
+        "PBM_CONNECTION_STRING";
+
     [STAThread]
     private static void Main()
     {
@@ -68,9 +71,7 @@ internal static class Program
             builder.Logging.ClearProviders();
             builder.Services.AddSerilog();
 
-            string? connectionString =
-                Environment.GetEnvironmentVariable(
-                    "PBM_CONNECTION_STRING");
+            string? connectionString = ResolveConnectionString();
 
             builder.Services.AddInfrastructure(
                 connectionString);
@@ -110,5 +111,42 @@ internal static class Program
         {
             Log.CloseAndFlush();
         }
+    }
+
+    private static string? ResolveConnectionString()
+    {
+        string? processValue = Environment.GetEnvironmentVariable(
+            ConnectionStringEnvironmentVariable,
+            EnvironmentVariableTarget.Process);
+
+        bool processValuePresent =
+            !string.IsNullOrWhiteSpace(processValue);
+
+        Log.Information(
+            "Process PBM connection-string variable is {Presence}.",
+            processValuePresent ? "present" : "absent");
+
+        if (!OperatingSystem.IsWindows())
+        {
+            return processValuePresent ? processValue : null;
+        }
+
+        string? userValue = Environment.GetEnvironmentVariable(
+            ConnectionStringEnvironmentVariable,
+            EnvironmentVariableTarget.User);
+
+        bool userValuePresent =
+            !string.IsNullOrWhiteSpace(userValue);
+
+        Log.Information(
+            "User PBM connection-string variable is {Presence}.",
+            userValuePresent ? "present" : "absent");
+
+        if (processValuePresent)
+        {
+            return processValue;
+        }
+
+        return userValuePresent ? userValue : null;
     }
 }

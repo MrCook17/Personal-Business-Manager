@@ -1,5 +1,7 @@
 ﻿using PersonalBusinessManager.WinForms.Theming;
 
+using System.ComponentModel;
+
 namespace PersonalBusinessManager.WinForms.Controls;
 
 public sealed class DarkButton : Button
@@ -30,6 +32,8 @@ public sealed class DarkButton : Button
         TabStop = true;
     }
 
+    [Browsable(false)]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public bool IsSelected
     {
         get => _isSelected;

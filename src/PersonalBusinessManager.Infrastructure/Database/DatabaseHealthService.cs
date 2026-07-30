@@ -22,6 +22,10 @@ public sealed class DatabaseHealthService : IDatabaseHealthService
     {
         if (!_connectionFactory.IsConfigured)
         {
+            _logger.LogWarning(
+                "Database connection check was skipped because " +
+                "the connection string is not configured.");
+
             return new DatabaseHealthResult(
                 false,
                 "Connection string not configured");
@@ -34,22 +38,31 @@ public sealed class DatabaseHealthService : IDatabaseHealthService
 
             await connection.OpenAsync(cancellationToken);
 
+            string serverVersion = connection.ServerVersion;
+
+            _logger.LogInformation(
+                "Database connection succeeded. Server version: {ServerVersion}.",
+                serverVersion);
+
             return new DatabaseHealthResult(
                 true,
-                $"Connected: {connection.ServerVersion}");
+                $"Connected: {serverVersion}");
         }
         catch (OperationCanceledException)
             when (cancellationToken.IsCancellationRequested)
         {
+            _logger.LogWarning(
+                "Database connection check was cancelled or timed out.");
+
             return new DatabaseHealthResult(
                 false,
                 "Connection check timed out");
         }
-        catch (MySqlException exception)
+        catch (Exception exception)
         {
             _logger.LogError(
-                exception,
-                "The MariaDB connection check failed.");
+                "Database connection failed. Error type: {ErrorType}.",
+                exception.GetType().Name);
 
             return new DatabaseHealthResult(
                 false,
