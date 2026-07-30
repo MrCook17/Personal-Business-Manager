@@ -46,5 +46,10 @@ The command refuses an existing schema with no applied migration history. Such
 a database must later use the guarded `baseline-existing` workflow defined by
 P2-05; initial migrations are never replayed over it.
 
-P2-03 provides the runner infrastructure. Migrations 1-13 are added under
-P2-04, and baseline verification/registration is added under P2-05.
+The tool contains the approved migrations 1-13 implemented under P2-04.
+Existing schemas still require the separately guarded baseline verification
+and registration workflow added under P2-05.
+
+The table- and seed-creating migrations deliberately reject `Down()` because
+those operations would destroy data or mutable configuration. Migration 12
+can be reversed safely and drops only the secondary indexes it created.

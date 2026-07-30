@@ -655,41 +655,78 @@ tools/PersonalBusinessManager.DatabaseMigrator/
 
 Implement the documented migration sequence:
 
-- [ ] `0001_create_users_and_security`
-- [ ] `0002_create_application_settings_and_audit`
-- [ ] `0003_create_customers_contacts_and_addresses`
-- [ ] `0004_create_jobs_tasks_and_time_tracking`
-- [ ] `0005_create_financial_account_types_and_accounts`
-- [ ] `0006_create_account_snapshots_applications_and_contributions`
-- [ ] `0007_create_invoice_sequences_invoices_and_lines`
-- [ ] `0008_create_invoice_time_links_and_payments`
-- [ ] `0009_create_expense_categories_and_expenses`
-- [ ] `0010_create_attachments_and_link_tables`
-- [ ] `0011_seed_core_lookup_data`
-- [ ] `0012_create_required_indexes_and_constraints`
-- [ ] `0013_seed_initial_application_settings`
+- [x] `0001_create_users_and_security`
+- [x] `0002_create_application_settings_and_audit`
+- [x] `0003_create_customers_contacts_and_addresses`
+- [x] `0004_create_jobs_tasks_and_time_tracking`
+- [x] `0005_create_financial_account_types_and_accounts`
+- [x] `0006_create_account_snapshots_applications_and_contributions`
+- [x] `0007_create_invoice_sequences_invoices_and_lines`
+- [x] `0008_create_invoice_time_links_and_payments`
+- [x] `0009_create_expense_categories_and_expenses`
+- [x] `0010_create_attachments_and_link_tables`
+- [x] `0011_seed_core_lookup_data`
+- [x] `0012_create_required_indexes_and_constraints`
+- [x] `0013_seed_initial_application_settings`
 
 **Rules:**
 
-- [ ] Every migration has an `Up`.
-- [ ] Add a safe `Down` only where practical.
-- [ ] Do not use destructive `Down` operations casually.
-- [ ] Do not modify a migration after it has been released.
-- [ ] Preserve lowercase `snake_case`.
-- [ ] Preserve `record_id`.
-- [ ] Preserve InnoDB and `utf8mb4`.
-- [ ] Preserve constraints and indexes.
-- [ ] Seed data is deterministic and idempotent where appropriate.
+- [x] Every migration has an `Up`.
+- [x] Add a safe `Down` only where practical.
+- [x] Do not use destructive `Down` operations casually.
+- [x] Do not modify a migration after it has been released.
+- [x] Preserve lowercase `snake_case`.
+- [x] Preserve `record_id`.
+- [x] Preserve InnoDB and `utf8mb4`.
+- [x] Preserve constraints and indexes.
+- [x] Seed data is deterministic and idempotent where appropriate.
 
 **Verification:**
 
-- [ ] Apply all migrations to an empty disposable MariaDB database.
-- [ ] Compare resulting schema to the approved schema.
-- [ ] Verify table, column, index, FK, unique and check counts.
-- [ ] Verify core seed data.
-- [ ] Verify migration version table exists.
-- [ ] Run the upgrade/baseline test against a copy of the existing database.
-- [ ] Never test destructive migration behaviour against the real development database first.
+- [x] Apply all migrations to an empty disposable MariaDB database.
+- [x] Compare resulting schema to the approved schema.
+- [x] Verify table, column, index, FK, unique and check counts.
+- [x] Verify core seed data.
+- [x] Verify migration version table exists.
+- [x] Run the upgrade/baseline test against a copy of the existing database.
+- [x] Never test destructive migration behaviour against the real development database first.
+
+### P2-04 completion evidence - 30 July 2026
+
+- Implemented FluentMigrator versions `1` through `13` in Infrastructure using
+  the exact approved bootstrap definitions and the approved migration order.
+- MariaDB DDL migrations use `TransactionBehavior.None` because MariaDB commits
+  DDL implicitly.
+- Destructive table and mutable-seed rollback is rejected explicitly. Migration
+  `0012` has a tested definition-level rollback that drops its 59 secondary
+  indexes in reverse order.
+- Automated parity tests compare the migration definitions and seed statements
+  with `docs/personal_business_management_application_schema.sql`.
+- A fresh disposable MariaDB 10.4.32 database successfully applied all 13
+  migrations. `schema_migrations` contained versions `1` through `13`,
+  `schema_information.schema_version` was `13`, and no migrations remained.
+- The migrated and freshly bootstrapped disposable schemas each produced 756
+  normalized metadata records with zero differences: 31 application tables,
+  373 columns, 128 named indexes, 31 primary keys, 18 unique constraints, 56
+  foreign keys, and 116 checks.
+- All 31 application tables used `record_id` primary keys, InnoDB, and
+  `utf8mb4_unicode_ci`.
+- Seeds verified as 17 financial-account types, one `Uncategorised` expense
+  category, two invoice sequences, and 18 application settings. Replaying the
+  approved idempotent seed logic preserved a customized invoice prefix and
+  next number and a customized application-setting value.
+- The current development database was streamed read-only into a uniquely named
+  disposable copy. Attempting normal migration was correctly blocked as an
+  existing unversioned schema; no history table was created and all 31
+  per-table row counts remained identical to the source.
+- The guarded `baseline-existing` registration itself remains P2-05 and was not
+  simulated or applied here.
+- The real `personal_business_manager` database was never altered. All three
+  disposable verification databases were removed after the checks.
+- Solution build and all tests pass. Migration tests cover exact schema and seed
+  parity, object counts and conventions, migration discovery, history metadata,
+  command parsing, safety guards, credential-statement exclusion, and the safe
+  secondary-index rollback definition.
 
 ---
 

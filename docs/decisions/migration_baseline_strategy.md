@@ -1603,16 +1603,16 @@ This corresponds to the Phase 2 migration work.
 - [x] Correct the `docs/` Git ignore policy.
 - [x] Add FluentMigrator packages.
 - [x] Add the dedicated migration tool.
-- [ ] Implement migrations `1–13`.
-- [ ] Prove an empty database can be built through migrations.
-- [ ] Compare migrated schema with the approved bootstrap.
+- [x] Implement migrations `1–13`.
+- [x] Prove an empty database can be built through migrations.
+- [x] Compare migrated schema with the approved bootstrap.
 - [ ] Implement and test `baseline-existing`.
 - [ ] Restore the current database backup to a disposable database.
 - [ ] Baseline the disposable copy without replaying `Up`.
 - [ ] Compare schema and data before/after.
 - [ ] Baseline the real development database.
-- [ ] Verify history and application schema version are `13`.
-- [ ] Verify no credentials appear in logs.
+- [x] Verify history and application schema version are `13`.
+- [x] Verify no credentials appear in logs.
 
 ---
 
@@ -1628,7 +1628,8 @@ Existing-database strategy:                 VERIFY, THEN REGISTER 1 through 13
 Automatic startup migration:                PROHIBITED
 Future schema changes:                      NEW MIGRATIONS ONLY
 P1-07 documentation gate:                   PASS
-Phase 2 migration implementation:           PENDING
+Phase 2 initial migrations (P2-04):         COMPLETE
+Existing-schema baseline (P2-05):           PENDING
 ```
 
 The migration order and baseline policy are now formally approved.
