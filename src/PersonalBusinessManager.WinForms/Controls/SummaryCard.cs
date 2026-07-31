@@ -1,46 +1,110 @@
-﻿using PersonalBusinessManager.WinForms.Theming;
+using PersonalBusinessManager.WinForms.Theming;
 
 namespace PersonalBusinessManager.WinForms.Controls;
 
-public sealed class SummaryCard : Panel
+public sealed class SummaryCard : Panel, IThemeAwareControl
 {
+    private readonly Label _headingLabel;
     private readonly Label _valueLabel;
 
     public SummaryCard(string heading, string value)
     {
-        Width = 230;
-        Height = 110;
-        Margin = new Padding(0, 0, 16, 16);
-        Padding = new Padding(16);
-        BackColor = ThemePalette.RaisedPanel;
+        ArgumentException.ThrowIfNullOrWhiteSpace(heading);
+        ArgumentNullException.ThrowIfNull(value);
 
-        Label headingLabel = new()
+        Width = UiDimensions.SummaryCardWidth;
+        Height = UiDimensions.SummaryCardHeight;
+        MinimumSize = new Size(
+            UiDimensions.SummaryCardWidth,
+            UiDimensions.SummaryCardHeight);
+        Margin = new Padding(
+            0,
+            0,
+            UiSpacing.Space16,
+            UiSpacing.Space16);
+        Padding = new Padding(UiSpacing.Space16);
+        TabStop = false;
+
+        var layout = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            AutoSize = false,
+            ColumnCount = 1,
+            RowCount = 2,
+            Margin = Padding.Empty,
+            Padding = Padding.Empty,
+        };
+        layout.RowStyles.Add(
+            new RowStyle(SizeType.AutoSize));
+        layout.RowStyles.Add(
+            new RowStyle(SizeType.Percent, 100F));
+
+        _headingLabel = new Label
         {
             AutoSize = true,
             Text = heading,
-            ForeColor = ThemePalette.SecondaryText,
-            Font = new Font("Segoe UI", 10F),
-            Location = new Point(16, 16)
+            Margin = new Padding(
+                0,
+                0,
+                0,
+                UiSpacing.Space8),
         };
 
         _valueLabel = new Label
         {
             AutoSize = true,
             Text = value,
-            ForeColor = ThemePalette.PrimaryText,
-            Font = new Font(
-                "Segoe UI",
-                20F,
-                FontStyle.Bold),
-            Location = new Point(16, 47)
+            Margin = Padding.Empty,
+            Anchor = AnchorStyles.Left,
         };
 
-        Controls.Add(headingLabel);
-        Controls.Add(_valueLabel);
+        layout.Controls.Add(_headingLabel, 0, 0);
+        layout.Controls.Add(_valueLabel, 0, 1);
+        Controls.Add(layout);
+
+        ApplyTheme();
     }
 
     public void SetValue(string value)
     {
+        ArgumentNullException.ThrowIfNull(value);
         _valueLabel.Text = value;
+    }
+
+    public void ApplyTheme()
+    {
+        ControlStyler.StylePanel(this, ThemeSurface.Raised);
+        ControlStyler.StyleLabel(
+            _headingLabel,
+            ThemeTextRole.Small,
+            ThemePalette.SecondaryText);
+        ControlStyler.StyleLabel(
+            _valueLabel,
+            ThemeTextRole.DashboardValue);
+
+        foreach (Control child in Controls)
+        {
+            child.BackColor = ThemePalette.RaisedPanel;
+            child.ForeColor = ThemePalette.PrimaryText;
+        }
+
+        Invalidate();
+    }
+
+    protected override void OnPaint(PaintEventArgs e)
+    {
+        base.OnPaint(e);
+
+        int borderWidth = DpiScaler.Scale(
+            UiDimensions.StandardBorderWidth,
+            DeviceDpi);
+        Rectangle borderBounds = Rectangle.Inflate(
+            ClientRectangle,
+            -borderWidth,
+            -borderWidth);
+        using var borderPen = new Pen(
+            ThemePalette.BorderSubtle,
+            borderWidth);
+        e.Graphics.DrawRectangle(borderPen, borderBounds);
     }
 }

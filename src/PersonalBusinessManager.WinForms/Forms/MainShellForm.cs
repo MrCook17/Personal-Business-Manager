@@ -1,4 +1,4 @@
-﻿using PersonalBusinessManager.Core.Application.Contracts;
+using PersonalBusinessManager.Core.Application.Contracts;
 using PersonalBusinessManager.WinForms.Controls;
 using PersonalBusinessManager.WinForms.Pages;
 using PersonalBusinessManager.WinForms.Theming;
@@ -8,7 +8,6 @@ namespace PersonalBusinessManager.WinForms.Forms;
 public sealed class MainShellForm : Form
 {
     private readonly IDatabaseHealthService _databaseHealthService;
-
     private readonly Panel _contentPanel = new();
     private readonly Label _pageTitleLabel = new();
     private readonly Label _breadcrumbLabel = new();
@@ -19,95 +18,114 @@ public sealed class MainShellForm : Form
     public MainShellForm(
         IDatabaseHealthService databaseHealthService)
     {
+        ArgumentNullException.ThrowIfNull(databaseHealthService);
         _databaseHealthService = databaseHealthService;
 
         Text = "Personal Business Manager";
         StartPosition = FormStartPosition.CenterScreen;
-        MinimumSize = new Size(1100, 700);
+        MinimumSize = new Size(
+            UiDimensions.MinimumWindowWidth,
+            UiDimensions.MinimumWindowHeight);
         WindowState = FormWindowState.Maximized;
-        BackColor = ThemePalette.ApplicationBackground;
-        ForeColor = ThemePalette.PrimaryText;
-        AutoScaleMode = AutoScaleMode.Dpi;
         DoubleBuffered = true;
 
+        ControlStyler.StyleForm(this);
         BuildLayout();
+        ShowPage(
+            new DashboardPage(),
+            "Dashboard",
+            "Home / Dashboard");
+        ThemeManager.Apply(this);
 
         Shown += MainShellForm_Shown;
     }
 
     private void BuildLayout()
     {
-        TableLayoutPanel rootLayout = new()
+        var rootLayout = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
             ColumnCount = 2,
             RowCount = 1,
             Margin = Padding.Empty,
             Padding = Padding.Empty,
-            BackColor = ThemePalette.ApplicationBackground
         };
+        ControlStyler.StylePanel(
+            rootLayout,
+            ThemeSurface.Application);
 
         rootLayout.ColumnStyles.Add(
-            new ColumnStyle(SizeType.Absolute, 220F));
-
+            new ColumnStyle(
+                SizeType.Absolute,
+                UiDimensions.ExpandedSidebarWidth));
         rootLayout.ColumnStyles.Add(
             new ColumnStyle(SizeType.Percent, 100F));
 
         rootLayout.Controls.Add(BuildSidebar(), 0, 0);
         rootLayout.Controls.Add(BuildMainArea(), 1, 0);
-
         Controls.Add(rootLayout);
     }
 
-    private Control BuildSidebar()
+    private TableLayoutPanel BuildSidebar()
     {
-        TableLayoutPanel sidebar = new()
+        var sidebar = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
             RowCount = 3,
             ColumnCount = 1,
-            BackColor = ThemePalette.SidebarBackground,
             Padding = Padding.Empty,
-            Margin = Padding.Empty
+            Margin = Padding.Empty,
         };
+        ControlStyler.StylePanel(
+            sidebar,
+            ThemeSurface.Sidebar);
 
         sidebar.RowStyles.Add(
-            new RowStyle(SizeType.Absolute, 72F));
-
+            new RowStyle(
+                SizeType.Absolute,
+                UiDimensions.HeaderHeight));
         sidebar.RowStyles.Add(
             new RowStyle(SizeType.Percent, 100F));
-
         sidebar.RowStyles.Add(
-            new RowStyle(SizeType.Absolute, 44F));
+            new RowStyle(
+                SizeType.Absolute,
+                UiDimensions.TimerStripHeight));
 
-        Label applicationName = new()
+        var applicationName = new Label
         {
             Dock = DockStyle.Fill,
             Text = "PBM",
             TextAlign = ContentAlignment.MiddleLeft,
-            Padding = new Padding(20, 0, 0, 0),
-            ForeColor = ThemePalette.PrimaryText,
-            Font = new Font(
-                "Segoe UI",
-                17F,
-                FontStyle.Bold)
+            Padding = new Padding(
+                UiSpacing.Space16,
+                0,
+                0,
+                0),
+            Margin = Padding.Empty,
         };
+        ControlStyler.StyleLabel(
+            applicationName,
+            ThemeTextRole.DialogHeading);
 
-        FlowLayoutPanel menu = new()
+        var menu = new FlowLayoutPanel
         {
             Dock = DockStyle.Fill,
             FlowDirection = FlowDirection.TopDown,
             WrapContents = false,
             AutoScroll = true,
-            Padding = new Padding(8, 8, 8, 8),
-            BackColor = ThemePalette.SidebarBackground
+            Padding = new Padding(UiSpacing.Space16),
+            Margin = Padding.Empty,
         };
+        ControlStyler.StylePanel(
+            menu,
+            ThemeSurface.Sidebar);
 
-        AddNavigationButton(
+        DarkButton dashboardButton = AddNavigationButton(
             menu,
             "Dashboard",
             "Home / Dashboard",
-            () => new DashboardPage());
+            static () => new DashboardPage());
+        SelectNavigationButton(dashboardButton);
 
         AddSectionHeading(menu, "WORK");
 
@@ -115,7 +133,7 @@ public sealed class MainShellForm : Form
             menu,
             "Customers",
             "Work / Customers",
-            () => new PlaceholderPage(
+            static () => new PlaceholderPage(
                 "Customers",
                 "Customer management will be implemented in Phase 4."));
 
@@ -123,7 +141,7 @@ public sealed class MainShellForm : Form
             menu,
             "Jobs",
             "Work / Jobs",
-            () => new PlaceholderPage(
+            static () => new PlaceholderPage(
                 "Jobs",
                 "Job management will be implemented in Phase 4."));
 
@@ -131,7 +149,7 @@ public sealed class MainShellForm : Form
             menu,
             "Time",
             "Work / Time",
-            () => new PlaceholderPage(
+            static () => new PlaceholderPage(
                 "Time",
                 "Persistent time tracking will be implemented in Phase 5."));
 
@@ -139,7 +157,7 @@ public sealed class MainShellForm : Form
             menu,
             "Tasks",
             "Work / Tasks",
-            () => new PlaceholderPage(
+            static () => new PlaceholderPage(
                 "Tasks",
                 "Task management will be implemented in Phase 6."));
 
@@ -149,7 +167,7 @@ public sealed class MainShellForm : Form
             menu,
             "Invoices",
             "Business finance / Invoices",
-            () => new PlaceholderPage(
+            static () => new PlaceholderPage(
                 "Invoices",
                 "Invoice management will be implemented in Phase 8."));
 
@@ -157,7 +175,7 @@ public sealed class MainShellForm : Form
             menu,
             "Expenses",
             "Business finance / Expenses",
-            () => new PlaceholderPage(
+            static () => new PlaceholderPage(
                 "Expenses",
                 "Expense management will be implemented in Phase 9."));
 
@@ -165,7 +183,7 @@ public sealed class MainShellForm : Form
             menu,
             "Business Reports",
             "Business finance / Reports",
-            () => new PlaceholderPage(
+            static () => new PlaceholderPage(
                 "Business reports",
                 "Business reporting will be implemented in Phase 10."));
 
@@ -175,7 +193,7 @@ public sealed class MainShellForm : Form
             menu,
             "Accounts",
             "Personal finance / Accounts",
-            () => new PlaceholderPage(
+            static () => new PlaceholderPage(
                 "Accounts",
                 "Financial account tracking will be implemented in Phase 7."));
 
@@ -183,7 +201,7 @@ public sealed class MainShellForm : Form
             menu,
             "Applications",
             "Personal finance / Applications",
-            () => new PlaceholderPage(
+            static () => new PlaceholderPage(
                 "Applications",
                 "Financial account applications will be implemented in Phase 7."));
 
@@ -191,7 +209,7 @@ public sealed class MainShellForm : Form
             menu,
             "Personal Reports",
             "Personal finance / Reports",
-            () => new PlaceholderPage(
+            static () => new PlaceholderPage(
                 "Personal reports",
                 "Personal finance reporting will be implemented in Phase 10."));
 
@@ -201,7 +219,7 @@ public sealed class MainShellForm : Form
             menu,
             "Audit History",
             "System / Audit history",
-            () => new PlaceholderPage(
+            static () => new PlaceholderPage(
                 "Audit history",
                 "The audit foundation will be implemented in Phase 3."));
 
@@ -209,7 +227,7 @@ public sealed class MainShellForm : Form
             menu,
             "Backups",
             "System / Backups",
-            () => new PlaceholderPage(
+            static () => new PlaceholderPage(
                 "Backups",
                 "Backup and restore will be implemented in Phase 11."));
 
@@ -217,18 +235,21 @@ public sealed class MainShellForm : Form
             menu,
             "Settings",
             "System / Settings",
-            () => new PlaceholderPage(
+            static () => new PlaceholderPage(
                 "Settings",
                 "Application settings will be implemented in Phase 3."));
 
-        Label phaseLabel = new()
+        var phaseLabel = new Label
         {
             Dock = DockStyle.Fill,
             Text = "Phase 2 application shell",
             TextAlign = ContentAlignment.MiddleCenter,
-            ForeColor = ThemePalette.MutedText,
-            Font = new Font("Segoe UI", 8.5F)
+            Margin = Padding.Empty,
         };
+        ControlStyler.StyleLabel(
+            phaseLabel,
+            ThemeTextRole.Caption,
+            ThemePalette.MutedText);
 
         sidebar.Controls.Add(applicationName, 0, 0);
         sidebar.Controls.Add(menu, 0, 1);
@@ -237,33 +258,39 @@ public sealed class MainShellForm : Form
         return sidebar;
     }
 
-    private Control BuildMainArea()
+    private TableLayoutPanel BuildMainArea()
     {
-        TableLayoutPanel mainLayout = new()
+        var mainLayout = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
             RowCount = 3,
             ColumnCount = 1,
-            BackColor = ThemePalette.ApplicationBackground,
             Margin = Padding.Empty,
-            Padding = Padding.Empty
+            Padding = Padding.Empty,
         };
+        ControlStyler.StylePanel(
+            mainLayout,
+            ThemeSurface.Application);
 
         mainLayout.RowStyles.Add(
-            new RowStyle(SizeType.Absolute, 72F));
-
+            new RowStyle(
+                SizeType.Absolute,
+                UiDimensions.HeaderHeight));
         mainLayout.RowStyles.Add(
             new RowStyle(SizeType.Percent, 100F));
-
         mainLayout.RowStyles.Add(
-            new RowStyle(SizeType.Absolute, 44F));
+            new RowStyle(
+                SizeType.Absolute,
+                UiDimensions.TimerStripHeight));
 
         mainLayout.Controls.Add(BuildHeader(), 0, 0);
 
         _contentPanel.Dock = DockStyle.Fill;
-        _contentPanel.Padding = new Padding(24);
-        _contentPanel.BackColor =
-            ThemePalette.ApplicationBackground;
+        _contentPanel.Padding = new Padding(UiSpacing.Space24);
+        _contentPanel.Margin = Padding.Empty;
+        ControlStyler.StylePanel(
+            _contentPanel,
+            ThemeSurface.Application);
 
         mainLayout.Controls.Add(_contentPanel, 0, 1);
         mainLayout.Controls.Add(BuildTimerStrip(), 0, 2);
@@ -271,123 +298,156 @@ public sealed class MainShellForm : Form
         return mainLayout;
     }
 
-    private Control BuildHeader()
+    private TableLayoutPanel BuildHeader()
     {
-        TableLayoutPanel header = new()
+        var header = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
             ColumnCount = 2,
             RowCount = 1,
-            Padding = new Padding(24, 8, 24, 8),
-            BackColor = ThemePalette.PanelBackground
+            Padding = new Padding(
+                UiSpacing.Space24,
+                UiSpacing.Space4,
+                UiSpacing.Space24,
+                UiSpacing.Space4),
+            Margin = Padding.Empty,
         };
+        ControlStyler.StylePanel(
+            header,
+            ThemeSurface.Header);
 
         header.ColumnStyles.Add(
             new ColumnStyle(SizeType.Percent, 65F));
-
         header.ColumnStyles.Add(
             new ColumnStyle(SizeType.Percent, 35F));
 
-        Panel titlePanel = new()
+        var titlePanel = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
-            BackColor = ThemePalette.PanelBackground
+            ColumnCount = 1,
+            RowCount = 2,
+            Padding = Padding.Empty,
+            Margin = Padding.Empty,
         };
+        ControlStyler.StylePanel(
+            titlePanel,
+            ThemeSurface.Header);
+        titlePanel.RowStyles.Add(
+            new RowStyle(SizeType.AutoSize));
+        titlePanel.RowStyles.Add(
+            new RowStyle(SizeType.AutoSize));
 
         _pageTitleLabel.AutoSize = true;
         _pageTitleLabel.Text = "Dashboard";
-        _pageTitleLabel.Location = new Point(0, 4);
-        _pageTitleLabel.ForeColor = ThemePalette.PrimaryText;
-        _pageTitleLabel.Font = new Font(
-            "Segoe UI",
-            18F,
-            FontStyle.Bold);
+        _pageTitleLabel.Margin = Padding.Empty;
+        ControlStyler.StyleLabel(
+            _pageTitleLabel,
+            ThemeTextRole.PageHeading);
 
         _breadcrumbLabel.AutoSize = true;
         _breadcrumbLabel.Text = "Home / Dashboard";
-        _breadcrumbLabel.Location = new Point(1, 40);
-        _breadcrumbLabel.ForeColor =
-            ThemePalette.SecondaryText;
-        _breadcrumbLabel.Font = new Font("Segoe UI", 9F);
+        _breadcrumbLabel.Margin = Padding.Empty;
+        ControlStyler.StyleLabel(
+            _breadcrumbLabel,
+            ThemeTextRole.Small,
+            ThemePalette.SecondaryText);
 
-        titlePanel.Controls.Add(_pageTitleLabel);
-        titlePanel.Controls.Add(_breadcrumbLabel);
+        titlePanel.Controls.Add(_pageTitleLabel, 0, 0);
+        titlePanel.Controls.Add(_breadcrumbLabel, 0, 1);
 
-        Panel statusPanel = new()
+        var statusPanel = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
-            BackColor = ThemePalette.PanelBackground
+            ColumnCount = 1,
+            RowCount = 2,
+            Padding = Padding.Empty,
+            Margin = Padding.Empty,
         };
+        ControlStyler.StylePanel(
+            statusPanel,
+            ThemeSurface.Header);
+        statusPanel.RowStyles.Add(
+            new RowStyle(SizeType.Percent, 50F));
+        statusPanel.RowStyles.Add(
+            new RowStyle(SizeType.Percent, 50F));
 
-        _databaseStatusLabel.Dock = DockStyle.Top;
-        _databaseStatusLabel.Height = 26;
+        _databaseStatusLabel.Dock = DockStyle.Fill;
         _databaseStatusLabel.Text = "Database: checking";
         _databaseStatusLabel.TextAlign =
             ContentAlignment.MiddleRight;
-        _databaseStatusLabel.ForeColor =
-            ThemePalette.Warning;
-        _databaseStatusLabel.Font = new Font(
-            "Segoe UI",
-            9F,
-            FontStyle.Bold);
+        _databaseStatusLabel.Margin = Padding.Empty;
+        ControlStyler.StyleLabel(
+            _databaseStatusLabel,
+            ThemeTextRole.Small,
+            ThemePalette.Warning);
 
-        Label backupStatusLabel = new()
+        var backupStatusLabel = new Label
         {
-            Dock = DockStyle.Top,
-            Height = 24,
+            Dock = DockStyle.Fill,
             Text = "Backup: not configured",
             TextAlign = ContentAlignment.MiddleRight,
-            ForeColor = ThemePalette.MutedText,
-            Font = new Font("Segoe UI", 9F)
+            Margin = Padding.Empty,
         };
+        ControlStyler.StyleLabel(
+            backupStatusLabel,
+            ThemeTextRole.Small,
+            ThemePalette.MutedText);
 
-        statusPanel.Controls.Add(backupStatusLabel);
-        statusPanel.Controls.Add(_databaseStatusLabel);
-
+        statusPanel.Controls.Add(_databaseStatusLabel, 0, 0);
+        statusPanel.Controls.Add(backupStatusLabel, 0, 1);
         header.Controls.Add(titlePanel, 0, 0);
         header.Controls.Add(statusPanel, 1, 0);
 
         return header;
     }
 
-    private static Control BuildTimerStrip()
+    private static Panel BuildTimerStrip()
     {
-        Panel timerStrip = new()
+        var timerStrip = new Panel
         {
             Dock = DockStyle.Fill,
-            BackColor = ThemePalette.PanelBackground,
-            Padding = new Padding(24, 0, 24, 0)
+            Padding = new Padding(
+                UiSpacing.Space24,
+                0,
+                UiSpacing.Space24,
+                0),
+            Margin = Padding.Empty,
         };
+        ControlStyler.StylePanel(
+            timerStrip,
+            ThemeSurface.Header);
 
-        Label timerLabel = new()
+        var timerLabel = new Label
         {
             Dock = DockStyle.Fill,
             Text = "Timer: no active timer — available from Phase 5",
             TextAlign = ContentAlignment.MiddleLeft,
-            ForeColor = ThemePalette.SecondaryText,
-            Font = new Font("Segoe UI", 9.5F)
+            Margin = Padding.Empty,
         };
+        ControlStyler.StyleLabel(
+            timerLabel,
+            ThemeTextRole.Label,
+            ThemePalette.SecondaryText);
 
         timerStrip.Controls.Add(timerLabel);
-
         return timerStrip;
     }
 
-    private void AddNavigationButton(
+    private DarkButton AddNavigationButton(
         FlowLayoutPanel menu,
         string pageTitle,
         string breadcrumb,
         Func<UserControl> pageFactory)
     {
-        DarkButton button = new()
+        var button = new DarkButton
         {
-            Text = pageTitle
+            Text = pageTitle,
+            Margin = Padding.Empty,
         };
 
         button.Click += (_, _) =>
         {
             SelectNavigationButton(button);
-
             ShowPage(
                 pageFactory(),
                 pageTitle,
@@ -395,25 +455,30 @@ public sealed class MainShellForm : Form
         };
 
         menu.Controls.Add(button);
+        return button;
     }
 
     private static void AddSectionHeading(
         FlowLayoutPanel menu,
         string text)
     {
-        Label heading = new()
+        var heading = new Label
         {
-            Width = 188,
-            Height = 32,
-            Margin = new Padding(8, 14, 0, 0),
+            Width = UiDimensions.ExpandedSidebarWidth
+                - (UiSpacing.Space16 * 2),
+            Height = UiDimensions.CompactControlHeight,
+            Margin = new Padding(
+                0,
+                UiSpacing.Space16,
+                0,
+                0),
             Text = text,
             TextAlign = ContentAlignment.BottomLeft,
-            ForeColor = ThemePalette.MutedText,
-            Font = new Font(
-                "Segoe UI",
-                8F,
-                FontStyle.Bold)
         };
+        ControlStyler.StyleLabel(
+            heading,
+            ThemeTextRole.Small,
+            ThemePalette.MutedText);
 
         menu.Controls.Add(heading);
     }
@@ -435,6 +500,8 @@ public sealed class MainShellForm : Form
         string pageTitle,
         string breadcrumb)
     {
+        ArgumentNullException.ThrowIfNull(page);
+
         Control[] existingControls =
             _contentPanel.Controls
                 .Cast<Control>()
@@ -448,38 +515,38 @@ public sealed class MainShellForm : Form
         }
 
         page.Dock = DockStyle.Fill;
-
+        ThemeManager.ApplyControlTree(page);
         _contentPanel.Controls.Add(page);
 
         _pageTitleLabel.Text = pageTitle;
         _breadcrumbLabel.Text = breadcrumb;
     }
 
+    protected override void OnDpiChanged(
+        DpiChangedEventArgs e)
+    {
+        base.OnDpiChanged(e);
+        PerformLayout();
+        Invalidate(true);
+    }
+
     private async void MainShellForm_Shown(
         object? sender,
         EventArgs eventArgs)
     {
-        ShowPage(
-            new DashboardPage(),
-            "Dashboard",
-            "Home / Dashboard");
-
         _databaseStatusLabel.Text = "Database: checking";
-        _databaseStatusLabel.ForeColor =
-            ThemePalette.Warning;
+        _databaseStatusLabel.ForeColor = ThemePalette.Warning;
 
         try
         {
-            using CancellationTokenSource timeout =
-                new(TimeSpan.FromSeconds(5));
-
+            using var timeout = new CancellationTokenSource(
+                TimeSpan.FromSeconds(5));
             DatabaseHealthResult result =
                 await _databaseHealthService.CheckAsync(
                     timeout.Token);
 
             _databaseStatusLabel.Text =
                 $"Database: {result.Message}";
-
             _databaseStatusLabel.ForeColor =
                 result.IsAvailable
                     ? ThemePalette.Success
@@ -489,7 +556,6 @@ public sealed class MainShellForm : Form
         {
             _databaseStatusLabel.Text =
                 "Database: connection check failed";
-
             _databaseStatusLabel.ForeColor =
                 ThemePalette.Danger;
         }

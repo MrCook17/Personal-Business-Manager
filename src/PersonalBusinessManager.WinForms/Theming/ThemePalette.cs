@@ -1,48 +1,170 @@
-﻿using System.Drawing;
+using System.Drawing;
 
 namespace PersonalBusinessManager.WinForms.Theming;
 
 public static class ThemePalette
 {
     public static readonly Color ApplicationBackground =
-        Color.FromArgb(17, 19, 24);
+        FromHex("#111318");
 
     public static readonly Color SidebarBackground =
-        Color.FromArgb(23, 26, 32);
+        FromHex("#171A20");
+
+    public static readonly Color HeaderBackground =
+        FromHex("#171A20");
 
     public static readonly Color PanelBackground =
-        Color.FromArgb(29, 33, 40);
+        FromHex("#1D2128");
 
     public static readonly Color RaisedPanel =
-        Color.FromArgb(36, 41, 50);
+        FromHex("#242932");
 
     public static readonly Color InputBackground =
-        Color.FromArgb(25, 29, 35);
+        FromHex("#191D23");
 
-    public static readonly Color Border =
-        Color.FromArgb(52, 59, 70);
+    public static readonly Color InputHoverBackground =
+        FromHex("#20252D");
+
+    public static readonly Color InputDisabledBackground =
+        FromHex("#20242B");
+
+    public static readonly Color OverlayBackground =
+        FromHex("#0B0D11");
+
+    public static readonly Color TooltipBackground =
+        FromHex("#2A303A");
+
+    public static readonly Color GridAlternateRow =
+        FromHex("#20252C");
+
+    public static readonly Color GridSelectedRow =
+        FromHex("#302B55");
+
+    public static readonly Color GridHoverRow =
+        FromHex("#282D37");
 
     public static readonly Color PrimaryText =
-        Color.FromArgb(241, 243, 245);
+        FromHex("#F1F3F5");
 
     public static readonly Color SecondaryText =
-        Color.FromArgb(170, 177, 187);
+        FromHex("#AAB1BB");
 
     public static readonly Color MutedText =
-        Color.FromArgb(116, 125, 137);
+        FromHex("#8B94A3");
+
+    public static readonly Color DisabledText =
+        FromHex("#7F8896");
+
+    public static readonly Color InverseText =
+        FromHex("#111318");
+
+    public static readonly Color LinkText =
+        FromHex("#A99FFF");
+
+    public static readonly Color LinkHoverText =
+        FromHex("#C1BAFF");
+
+    public static readonly Color PlaceholderText =
+        FromHex("#7F8896");
+
+    public static readonly Color BorderSubtle =
+        FromHex("#2B313B");
+
+    public static readonly Color BorderDefault =
+        FromHex("#343B46");
+
+    public static readonly Color BorderStrong =
+        FromHex("#505968");
+
+    public static readonly Color FocusBorder =
+        FromHex("#A99FFF");
+
+    public static readonly Color Divider =
+        FromHex("#2B313B");
+
+    public static readonly Color SelectionIndicator =
+        FromHex("#7C6CF2");
 
     public static readonly Color Accent =
-        Color.FromArgb(124, 108, 242);
+        FromHex("#7C6CF2");
 
     public static readonly Color AccentHover =
-        Color.FromArgb(145, 132, 247);
+        FromHex("#9184F7");
+
+    public static readonly Color AccentPressed =
+        FromHex("#6959DC");
+
+    public static readonly Color AccentSoft =
+        FromHex("#302B55");
+
+    public static readonly Color AccentBorder =
+        FromHex("#8F83F5");
+
+    public static readonly Color AccentText =
+        FromHex("#A99FFF");
 
     public static readonly Color Success =
-        Color.FromArgb(70, 185, 129);
+        FromHex("#46B981");
+
+    public static readonly Color SuccessSoft =
+        FromHex("#18352B");
+
+    public static readonly Color SuccessBorder =
+        FromHex("#2F8F68");
+
+    public static readonly Color SuccessText =
+        FromHex("#75D5A8");
 
     public static readonly Color Warning =
-        Color.FromArgb(214, 166, 74);
+        FromHex("#D6A64A");
+
+    public static readonly Color WarningSoft =
+        FromHex("#382D18");
+
+    public static readonly Color WarningBorder =
+        FromHex("#A77D2E");
+
+    public static readonly Color WarningText =
+        FromHex("#E6C16F");
 
     public static readonly Color Danger =
-        Color.FromArgb(220, 92, 104);
+        FromHex("#DC5C68");
+
+    public static readonly Color DangerSoft =
+        FromHex("#3B2026");
+
+    public static readonly Color DangerBorder =
+        FromHex("#B84A56");
+
+    public static readonly Color DangerText =
+        FromHex("#F0848E");
+
+    public static readonly Color Information =
+        FromHex("#5C9DED");
+
+    public static readonly Color InformationSoft =
+        FromHex("#192C43");
+
+    public static readonly Color InformationBorder =
+        FromHex("#3E78B9");
+
+    public static readonly Color InformationText =
+        FromHex("#82B7F5");
+
+    public static readonly Color Neutral =
+        FromHex("#8B94A3");
+
+    public static readonly Color NeutralSoft =
+        FromHex("#292E37");
+
+    public static readonly Color NeutralBorder =
+        FromHex("#505968");
+
+    public static readonly Color NeutralText =
+        FromHex("#C1C7D0");
+
+    private static Color FromHex(string value)
+    {
+        return ColorTranslator.FromHtml(value);
+    }
 }

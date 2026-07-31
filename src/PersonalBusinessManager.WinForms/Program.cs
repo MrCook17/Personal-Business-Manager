@@ -3,6 +3,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using PersonalBusinessManager.Infrastructure;
 using PersonalBusinessManager.WinForms.Forms;
+using PersonalBusinessManager.WinForms.Theming;
 using Serilog;
 
 namespace PersonalBusinessManager.WinForms;
@@ -109,6 +110,7 @@ internal static class Program
         }
         finally
         {
+            UiFonts.Dispose();
             Log.CloseAndFlush();
         }
     }

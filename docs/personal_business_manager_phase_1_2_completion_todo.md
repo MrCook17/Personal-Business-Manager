@@ -1087,36 +1087,82 @@ Create:
 Theming/ThemePalette.cs
 Theming/UiSpacing.cs
 Theming/UiFonts.cs
+Theming/UiDimensions.cs
 Theming/ThemeManager.cs
 Theming/ControlStyler.cs
+Theming/DpiScaler.cs
 ```
 
 `ThemePalette` already exists; retain and improve it rather than duplicating it.
 
 **Implement:**
 
-- [ ] Shared spacing values.
-- [ ] Shared fonts and font sizes.
-- [ ] Form/background styling.
-- [ ] Button styling.
-- [ ] Input styling.
-- [ ] Label/heading styling.
-- [ ] DataGridView styling.
-- [ ] TabControl styling.
-- [ ] Focus and disabled states.
-- [ ] DPI-aware sizing.
+- [x] Shared spacing values.
+- [x] Shared fonts and font sizes.
+- [x] Form/background styling.
+- [x] Button styling.
+- [x] Input styling.
+- [x] Label/heading styling.
+- [x] DataGridView styling.
+- [x] TabControl styling.
+- [x] Focus and disabled states.
+- [x] DPI-aware sizing.
 
 **Refactor:**
 
-- [ ] Remove repeated font declarations where practical.
-- [ ] Remove repeated padding/spacing values where practical.
-- [ ] Avoid scattering hard-coded colours across pages and controls.
+- [x] Remove repeated font declarations where practical.
+- [x] Remove repeated padding/spacing values where practical.
+- [x] Avoid scattering hard-coded colours across pages and controls.
 
 **Verification:**
 
-- [ ] Main shell still looks correct.
-- [ ] New controls consume shared theme values.
-- [ ] Scaling is checked at 100%, 125% and 150%.
+- [x] Main shell still looks correct.
+- [x] New controls consume shared theme values.
+- [x] Scaling is checked at 100%, 125% and 150%.
+
+**Completion evidence (31 July 2026):**
+
+- `ThemePalette` now implements the complete approved colour-token table from
+  `docs/design/dark_theme_system.md`; the former muted-text mismatch was
+  corrected. A source scan finds no colour construction elsewhere in the
+  WinForms project.
+- `UiSpacing`, `UiFonts`, and `UiDimensions` centralise the approved spacing
+  scale, application-lifetime font instances, control sizes, shell dimensions,
+  borders, and common component dimensions. `Program` disposes the shared
+  fonts when the application exits.
+- `ThemeManager` applies safe defaults recursively to forms, pages, dynamically
+  added controls, and designer-created standard controls. It recognises
+  `IThemeAwareControl`, preserves explicit semantic appearances, and exposes a
+  validation scan that reports unapproved background or text colours.
+- `ControlStyler` provides focused styling for forms/dialogs, panels, labels,
+  buttons, text/combo/date/numeric inputs, `DataGridView`, `TabControl`,
+  tool strips, and context menus. It includes hover, pressed, keyboard-focus,
+  read-only, selected, and disabled states without adding duplicate event
+  handlers when a control is themed again.
+- Grid styling uses approved dark header/row/alternate/selection colours,
+  40 px headers, 36 px rows, full-row selection, and double buffering. Tabs use
+  owner-drawn dark headers, selected indicators, and visible keyboard focus.
+- `DpiScaler` centralises 96-DPI logical-pixel conversion for custom painting.
+  The shell remains `AutoScaleMode.Dpi`; custom borders and selection indicators
+  scale by the control's current `DeviceDpi`, and DPI changes preserve the
+  sizes applied by WinForms rather than resetting them to 96-DPI values.
+- `MainShellForm`, `DashboardPage`, `PlaceholderPage`, `DarkButton`, and
+  `SummaryCard` were refactored to consume shared theme, font, spacing, and
+  dimension values. The shell now uses the approved 224 px sidebar, 64 px
+  header, 48 px timer strip, and 1100 x 700 minimum window, and Dashboard is
+  visibly selected on first display.
+- A dedicated Windows-targeted theme test project contains 13 passing cases.
+  It verifies exact tokens, approved spacing/dimensions, DPI calculations,
+  safe recursive/default/semantic styling, disabled states, dark buffered-grid
+  configuration, owner-drawn tabs, and the absence of unthemed controls in the
+  shell.
+- The complete database-enabled solution suite passes all 116 tests: 38 Core,
+  65 Infrastructure/integration, and 13 WinForms theme tests. With database
+  credentials deliberately absent, 108 pass and only the eight guarded MariaDB
+  tests skip.
+- Full off-screen shell renders were inspected at 96, 120, and 144 DPI
+  (100%, 125%, and 150%). Layout, typography, navigation selection, cards, and
+  status content remained readable and unclipped at each required scale.
 
 ---
 

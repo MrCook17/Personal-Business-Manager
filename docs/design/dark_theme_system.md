@@ -1658,14 +1658,28 @@ public static class UiDimensions
     public const int StandardControlHeight = 36;
     public const int CompactControlHeight = 32;
     public const int LargeControlHeight = 44;
+    public const int StandardButtonMinimumWidth = 88;
+    public const int LargeButtonMinimumWidth = 120;
+    public const int SidebarNavigationHeight = 40;
+    public const int TabHeaderHeight = 40;
+    public const int TabHeaderWidth = 128;
     public const int GridHeaderHeight = 40;
     public const int GridRowHeight = 36;
+    public const int ComfortableGridRowHeight = 48;
+    public const int GridCellHorizontalPadding = 12;
     public const int ExpandedSidebarWidth = 224;
     public const int CollapsedSidebarWidth = 64;
     public const int HeaderHeight = 64;
     public const int TimerStripHeight = 48;
+    public const int SummaryCardHeight = 112;
+    public const int SummaryCardWidth = 240;
     public const int MinimumWindowWidth = 1100;
     public const int MinimumWindowHeight = 700;
+    public const int ResponsiveWidth = 1180;
+    public const int StandardBorderWidth = 1;
+    public const int FocusBorderWidth = 2;
+    public const int SelectionIndicatorWidth = 3;
+    public const int CornerRadius = 6;
 }
 ```
 
@@ -1843,17 +1857,22 @@ When implementing or changing UI:
 
 ## Phase 2 implementation evidence still required
 
-- [ ] Update the existing `ThemePalette` to match the approved tokens.
-- [ ] Add `UiSpacing`.
-- [ ] Add `UiFonts`.
-- [ ] Add `UiDimensions`.
-- [ ] Add or complete `ThemeManager`.
-- [ ] Add or complete `ControlStyler`.
-- [ ] Add `DpiScaler` where custom drawing requires it.
+- [x] Update the existing `ThemePalette` to match the approved tokens.
+- [x] Add `UiSpacing`.
+- [x] Add `UiFonts`.
+- [x] Add `UiDimensions`.
+- [x] Add or complete `ThemeManager`.
+- [x] Add or complete `ControlStyler`.
+- [x] Add `DpiScaler` where custom drawing requires it.
 - [ ] Complete the required themed controls.
 - [ ] Add a development-only control gallery or equivalent visual test form.
-- [ ] Verify common screens at 100%, 125% and 150%.
-- [ ] Confirm no new screen contains hard-coded theme values.
+- [x] Verify common screens at 100%, 125% and 150%.
+- [x] Confirm no new screen contains hard-coded theme values.
+
+P2-09 completed the shared infrastructure and verified the current main shell
+and Dashboard at the required scale factors. The two remaining unchecked items
+belong to P2-10 and keep the overall matching Phase 2 implementation decision
+pending until the reusable control set and its gallery are complete.
 
 ---
 

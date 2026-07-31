@@ -1,4 +1,4 @@
-﻿using PersonalBusinessManager.WinForms.Theming;
+using PersonalBusinessManager.WinForms.Theming;
 
 namespace PersonalBusinessManager.WinForms.Pages;
 
@@ -8,32 +8,62 @@ public sealed class PlaceholderPage : UserControl
         string headingText,
         string descriptionText)
     {
-        Dock = DockStyle.Fill;
-        BackColor = ThemePalette.ApplicationBackground;
+        ArgumentException.ThrowIfNullOrWhiteSpace(headingText);
+        ArgumentException.ThrowIfNullOrWhiteSpace(descriptionText);
 
-        Label heading = new()
+        Dock = DockStyle.Fill;
+        AutoScroll = true;
+        ControlStyler.StylePanel(
+            this,
+            ThemeSurface.Application);
+
+        var layout = new TableLayoutPanel
+        {
+            Dock = DockStyle.Top,
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            ColumnCount = 1,
+            RowCount = 2,
+            Margin = Padding.Empty,
+            Padding = Padding.Empty,
+            MaximumSize = new Size(700, 0),
+        };
+        ControlStyler.StylePanel(
+            layout,
+            ThemeSurface.Application);
+        layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+
+        var heading = new Label
         {
             AutoSize = true,
             Text = headingText,
-            ForeColor = ThemePalette.PrimaryText,
-            Font = new Font(
-                "Segoe UI",
-                15F,
-                FontStyle.Bold),
-            Location = new Point(0, 0)
+            Margin = new Padding(
+                0,
+                0,
+                0,
+                UiSpacing.Space8),
         };
+        ControlStyler.StyleLabel(
+            heading,
+            ThemeTextRole.SectionHeading);
 
-        Label description = new()
+        var description = new Label
         {
             AutoSize = true,
             MaximumSize = new Size(700, 0),
             Text = descriptionText,
-            ForeColor = ThemePalette.SecondaryText,
-            Font = new Font("Segoe UI", 10F),
-            Location = new Point(0, 40)
+            Margin = Padding.Empty,
         };
+        ControlStyler.StyleLabel(
+            description,
+            ThemeTextRole.Body,
+            ThemePalette.SecondaryText);
 
-        Controls.Add(heading);
-        Controls.Add(description);
+        layout.Controls.Add(heading, 0, 0);
+        layout.Controls.Add(description, 0, 1);
+        Controls.Add(layout);
+
+        ThemeManager.ApplyControlTree(this);
     }
 }
