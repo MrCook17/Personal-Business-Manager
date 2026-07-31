@@ -836,16 +836,16 @@ Database/Repositories/ApplicationSettingRepository.cs
 
 **Required behaviour:**
 
-- [ ] Read by `setting_key`.
-- [ ] Insert a test/development setting.
-- [ ] Update it using parameterised Dapper SQL.
-- [ ] Delete or roll back the test change in integration tests.
-- [ ] Use explicit columns.
-- [ ] Use async methods.
-- [ ] Accept cancellation tokens.
-- [ ] Use a new short-lived connection per operation.
-- [ ] Do not expose SQL to WinForms.
-- [ ] Do not add Phase 3 settings business logic yet.
+- [x] Read by `setting_key`.
+- [x] Insert a test/development setting.
+- [x] Update it using parameterised Dapper SQL.
+- [x] Delete or roll back the test change in integration tests.
+- [x] Use explicit columns.
+- [x] Use async methods.
+- [x] Accept cancellation tokens.
+- [x] Use a new short-lived connection per operation.
+- [x] Do not expose SQL to WinForms.
+- [x] Do not add Phase 3 settings business logic yet.
 
 **Alternative:**
 
@@ -853,11 +853,51 @@ Use another harmless existing foundation table, provided the audit test proves b
 
 **Verification:**
 
-- [ ] Repository read test passes.
-- [ ] Repository write test passes in a dedicated test database.
-- [ ] No SQL exists in WinForms.
-- [ ] Dapper is actually used.
-- [ ] Test cleanup is reliable.
+- [x] Repository read test passes.
+- [x] Repository write test passes in a dedicated test database.
+- [x] No SQL exists in WinForms.
+- [x] Dapper is actually used.
+- [x] Test cleanup is reliable.
+
+**Completion evidence (31 July 2026):**
+
+- Core now owns the focused `IApplicationSettingRepository` contract and
+  `ApplicationSettingDto`; neither depends on Infrastructure, Dapper, or UI
+  types.
+- Infrastructure implements the contract with Dapper in
+  `Database/Repositories/ApplicationSettingRepository.cs` and registers it as
+  a transient dependency. Read, insert, update, and delete operations use
+  explicit columns, named parameters, a 30-second command timeout, async APIs,
+  and the supplied cancellation token.
+- Every operation creates, opens, and asynchronously disposes a separate
+  `MySqlConnection`. No connection or transaction is shared between calls.
+- The repository performs persistence only. Value parsing, validation,
+  settings workflows, auditing, and other Phase 3 behavior were deliberately
+  not added.
+- A source scan found zero SQL statement matches in the WinForms project.
+  Dapper usage is directly exercised through `QuerySingleOrDefaultAsync`,
+  `QuerySingleAsync`, `ExecuteAsync`, and `CommandDefinition`.
+- Integration tests use `PBM_TEST_CONNECTION_STRING`. The MariaDB tests are
+  visibly skipped when it is absent, reject the real
+  `personal_business_manager` database, and require a database name containing
+  `test`; P2-07 remains responsible for the reusable creation/reset harness.
+- Final database proof used the disposable
+  `pbm_p206_repository_test_20260731_100456` database built through migrations
+  `1` through `13`. Repository operations ran through a generated, temporary
+  CRUD-only account rather than the MariaDB administrator account.
+- The read test retrieved the seeded `locale = en-GB` row. The write test
+  inserted a uniquely keyed setting, read it, updated a quote-containing value
+  through parameterised SQL, read the new value, and deleted the row in a
+  `finally` block.
+- Post-test inspection found all 18 seed settings, zero matching test rows, and
+  intact migration history `1` through `13`. The disposable database and
+  account were then dropped; direct inspection found zero remaining objects.
+- The full database-enabled suite passed 36 of 36 tests with zero failures and
+  zero skips: 1 Core test and 35 Infrastructure/integration tests. A normal run
+  without `PBM_TEST_CONNECTION_STRING` also passes while reporting the two
+  database-dependent tests as skipped rather than touching another database.
+- No supplied or generated password was written to source, documentation,
+  test output, or Git, and the real development database was not modified.
 
 ---
 
@@ -926,8 +966,8 @@ Add tests for:
 - [ ] Database health service.
 - [ ] Migration application to an empty test database.
 - [ ] Baseline handling for an existing-schema copy.
-- [ ] Dapper repository read.
-- [ ] Dapper repository write.
+- [x] Dapper repository read.
+- [x] Dapper repository write.
 - [ ] Repository cancellation support.
 - [ ] At least one critical unique constraint.
 - [ ] At least one foreign-key restriction.
@@ -1264,7 +1304,7 @@ nothing to commit, working tree clean
 - [ ] Empty test database is created through migrations.
 - [ ] Existing schema baseline has been tested.
 - [ ] Existing development database is safely baselined.
-- [ ] Sample Dapper repository read/write passes.
+- [x] Sample Dapper repository read/write passes.
 
 ## Documentation and approvals
 
@@ -1298,7 +1338,7 @@ Phase 2 is complete only when all of the following are true:
 - [ ] Solution structure and dependency direction remain correct.
 - [ ] Dependency injection and logging work.
 - [ ] Dedicated MariaDB runtime account is in use.
-- [ ] Dapper is used by a real repository.
+- [x] Dapper is used by a real repository.
 - [ ] FluentMigrator is configured.
 - [ ] Initial migrations build an empty test database.
 - [ ] Existing schema is safely baselined.
