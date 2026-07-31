@@ -980,18 +980,18 @@ PBM_TEST_CONNECTION_STRING
 
 Using the approved examples from P1-06, add tests for:
 
-- [ ] Monetary rounding.
-- [ ] VAT after discount.
-- [ ] Percentage discount.
-- [ ] Fixed discount.
-- [ ] Invoice totals.
-- [ ] Payment status.
-- [ ] Time rounding.
-- [ ] Duration calculation.
-- [ ] Net-worth calculation.
-- [ ] Asset/liability sign handling.
-- [ ] Profit estimate.
-- [ ] Tax-reserve estimate.
+- [x] Monetary rounding.
+- [x] VAT after discount.
+- [x] Percentage discount.
+- [x] Fixed discount.
+- [x] Invoice totals.
+- [x] Payment status.
+- [x] Time rounding.
+- [x] Duration calculation.
+- [x] Net-worth calculation.
+- [x] Asset/liability sign handling.
+- [x] Profit estimate.
+- [x] Tax-reserve estimate.
 
 These may require adding small pure Core calculation classes. Do not add UI or database dependencies to Core.
 
@@ -999,22 +999,22 @@ These may require adding small pure Core calculation classes. Do not add UI or d
 
 Add tests for:
 
-- [ ] MariaDB connection factory.
-- [ ] Database health service.
+- [x] MariaDB connection factory.
+- [x] Database health service.
 - [x] Migration application to an empty test database.
-- [ ] Baseline handling for an existing-schema copy.
+- [x] Baseline handling for an existing-schema copy.
 - [x] Dapper repository read.
 - [x] Dapper repository write.
-- [ ] Repository cancellation support.
-- [ ] At least one critical unique constraint.
-- [ ] At least one foreign-key restriction.
-- [ ] Optimistic concurrency where foundation code exists.
+- [x] Repository cancellation support.
+- [x] At least one critical unique constraint.
+- [x] At least one foreign-key restriction.
+- [x] Optimistic concurrency where foundation code exists.
 
 **Cleanup:**
 
-- [ ] Delete `UnitTest1.cs` template tests.
-- [ ] Give every test a descriptive name.
-- [ ] Ensure tests fail for the correct reason.
+- [x] Delete `UnitTest1.cs` template tests.
+- [x] Give every test a descriptive name.
+- [x] Ensure tests fail for the correct reason.
 
 **Verification:**
 
@@ -1022,9 +1022,56 @@ Add tests for:
 dotnet test PersonalBusinessManager.slnx
 ```
 
-- [ ] All meaningful tests pass.
-- [ ] No empty placeholder tests remain.
+- [x] All meaningful tests pass.
+- [x] No empty placeholder tests remain.
 - [x] Tests cannot target the real database.
+
+**Completion evidence (31 July 2026):**
+
+- Six pure calculation components were added to Core with no UI, database,
+  Dapper, or MariaDB dependency: monetary rounding; invoice line/totals;
+  settlement status; duration/time rounding; net worth; and profit/tax-reserve
+  estimates.
+- The Core suite now contains 38 passing cases. It verifies all eight approved
+  midpoint examples, percentage and fixed discounts, VAT after discount,
+  VAT-inclusive derivation, stored-line invoice totals, settlement precedence,
+  overpayments, exact duration, every approved time-rounding rule, exact-boundary
+  behaviour, signed asset/liability treatment, the £9,600 net-worth example,
+  £1,100 profit estimate, and £275/£0 tax-reserve examples.
+- Validation tests assert the relevant parameter and exception for invalid
+  discounts and duration, so they fail for the intended business-rule reason.
+- MariaDB tests now open the approved database through the connection factory,
+  exercise both configured and unconfigured health results, and prove an
+  already-cancelled repository operation propagates cancellation.
+- Database constraint tests prove duplicate `application_settings.setting_key`
+  values fail with MariaDB error `1062` and an unknown
+  `updated_by_user_id` fails with error `1452`. Unique test keys are deleted in
+  `finally`; the foreign-key rejection leaves no inserted row.
+- The baseline integration test temporarily empties migration history in the
+  guarded test database, registers the existing version-13 schema without
+  replaying migration `Up` methods, compares pre/post schema and data
+  fingerprints, and restores the exact original migration history and metadata
+  in `finally`.
+- Database tests sharing the fixed MariaDB target are in one non-parallel test
+  collection so the baseline metadata transition cannot overlap repository or
+  constraint tests.
+- Optimistic concurrency was assessed under the checklist's "where foundation
+  code exists" condition. No versioned repository exists yet—the only current
+  repository is for unversioned `application_settings`—so a behavioural test
+  would test invented SQL rather than application foundation code. It remains a
+  required test when the first `version_no` repository is introduced.
+- Both `UnitTest1.cs` files were deleted. A source scan finds no `UnitTest1`,
+  `Test1`, empty template test, or undescriptive replacement.
+- With both guarded test variables configured, all 103 tests pass with no
+  failures or skips: 38 Core and 65 Infrastructure/integration tests. Without
+  credentials, 95 tests pass and the eight database-dependent tests are
+  explicitly skipped.
+- Post-test current-schema verification succeeds for both the test and normal
+  development databases with the approved schema fingerprint
+  `7a85fdf6b3c6bd5d4a2d5ba1f47c33af24f5a46714b89a07939b19a24fb79b6f`
+  and 39-row data fingerprint
+  `6e620fcec64f25cdc2a7638496fd697bee2a5fd4062837327ada4671566987cb`.
+  This confirms cleanup completed and real application data was not modified.
 
 ---
 
@@ -1313,9 +1360,9 @@ nothing to commit, working tree clean
 
 ## Tests
 
-- [ ] `dotnet test PersonalBusinessManager.slnx` succeeds.
-- [ ] Empty template tests have been removed.
-- [ ] Meaningful Core unit tests pass.
+- [x] `dotnet test PersonalBusinessManager.slnx` succeeds.
+- [x] Empty template tests have been removed.
+- [x] Meaningful Core unit tests pass.
 - [x] Meaningful MariaDB integration tests pass.
 - [x] Test database guards pass.
 
@@ -1379,7 +1426,7 @@ Phase 2 is complete only when all of the following are true:
 - [ ] FluentMigrator is configured.
 - [x] Initial migrations build an empty test database.
 - [ ] Existing schema is safely baselined.
-- [ ] Meaningful unit and integration tests pass.
+- [x] Meaningful unit and integration tests pass.
 - [ ] Main dark shell infrastructure is complete.
 - [ ] Minimum reusable themed controls exist.
 - [ ] List/search/paging foundation exists.

@@ -7,6 +7,7 @@ using PersonalBusinessManager.Infrastructure.Database.Repositories;
 
 namespace PersonalBusinessManager.IntegrationTests;
 
+[Collection(MariaDbTestGroup.Name)]
 public sealed class ApplicationSettingRepositoryTests
 {
     [Fact]
@@ -125,6 +126,20 @@ public sealed class ApplicationSettingRepositoryTests
             await repository.GetByKeyAsync(
                 settingKey,
                 timeout.Token));
+    }
+
+    [MariaDbTestFact]
+    public async Task GetByKeyAsyncHonoursAnAlreadyCancelledToken()
+    {
+        ApplicationSettingRepository repository = CreateRepository();
+        using var cancellationSource =
+            new CancellationTokenSource();
+        await cancellationSource.CancelAsync();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => repository.GetByKeyAsync(
+                "business.name",
+                cancellationSource.Token));
     }
 
     private static ApplicationSettingRepository CreateRepository()

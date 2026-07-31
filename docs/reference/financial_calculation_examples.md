@@ -2422,11 +2422,11 @@ They do not rebuild historic invoices from current:
 
 ## Evidence still required during Phase 2
 
-- [ ] Add matching Core calculation classes.
-- [ ] Add matching unit tests.
-- [ ] Add MariaDB constraint/integration tests.
-- [ ] Verify the examples against implemented code.
-- [ ] Commit this document to Git.
+- [x] Add matching Core calculation classes.
+- [x] Add matching unit tests.
+- [x] Add MariaDB constraint/integration tests.
+- [x] Verify the examples against implemented code.
+- [x] Commit this document to Git.
 
 ---
 

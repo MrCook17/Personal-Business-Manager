@@ -29,6 +29,32 @@ internal static class MariaDbTestEnvironment
 
         return connectionString;
     }
+
+    public static string GetRequiredMigrationConnectionString()
+    {
+        string connectionString =
+            Environment.GetEnvironmentVariable(
+                TestDatabaseSafetyGuard
+                    .MigrationConnectionEnvironmentVariable,
+                EnvironmentVariableTarget.Process)
+            ?? throw new InvalidOperationException(
+                TestDatabaseSafetyGuard
+                    .MigrationConnectionEnvironmentVariable
+                + " is not configured for this test process.");
+        TestDatabaseTargetValidation validation =
+            TestDatabaseSafetyGuard
+                .ValidateMigrationConnectionString(
+                    connectionString);
+
+        if (!validation.IsSafe)
+        {
+            throw new InvalidOperationException(
+                validation.Error
+                    ?? "The test migration target is unsafe.");
+        }
+
+        return connectionString;
+    }
 }
 
 internal sealed class MariaDbTestFactAttribute : FactAttribute
@@ -46,6 +72,26 @@ internal sealed class MariaDbTestFactAttribute : FactAttribute
                 + TestDatabaseSafetyGuard
                     .RuntimeConnectionEnvironmentVariable
                 + " for the approved MariaDB test database.";
+        }
+    }
+}
+
+internal sealed class MariaDbMigrationTestFactAttribute
+    : FactAttribute
+{
+    public MariaDbMigrationTestFactAttribute()
+    {
+        if (string.IsNullOrWhiteSpace(
+                Environment.GetEnvironmentVariable(
+                    TestDatabaseSafetyGuard
+                        .MigrationConnectionEnvironmentVariable,
+                    EnvironmentVariableTarget.Process)))
+        {
+            Skip =
+                "Set "
+                + TestDatabaseSafetyGuard
+                    .MigrationConnectionEnvironmentVariable
+                + " for migration-level MariaDB tests.";
         }
     }
 }
