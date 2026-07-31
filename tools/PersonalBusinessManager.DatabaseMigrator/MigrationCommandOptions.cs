@@ -5,6 +5,7 @@ public enum MigrationCommand
     Status,
     VerifyBaseline,
     Migrate,
+    ResetTestDatabase,
     BaselineExisting,
     Verify,
 }
@@ -46,6 +47,8 @@ public sealed record MigrationCommandOptions(
             "verify-baseline" =>
                 MigrationCommand.VerifyBaseline,
             "migrate" => MigrationCommand.Migrate,
+            "reset-test" =>
+                MigrationCommand.ResetTestDatabase,
             "baseline-existing" =>
                 MigrationCommand.BaselineExisting,
             "verify" => MigrationCommand.Verify,
@@ -149,20 +152,36 @@ public sealed record MigrationCommandOptions(
                 "The selected read-only command accepts only --connection-env.");
         }
 
-        if (command == MigrationCommand.Migrate
+        if ((command is MigrationCommand.Migrate
+                or MigrationCommand.ResetTestDatabase)
             && string.IsNullOrWhiteSpace(confirmation))
         {
             return MigrationCommandParseResult.Failure(
-                "The migrate command requires an explicit --confirm value.");
+                $"The {arguments[0]} command requires an explicit --confirm value.");
         }
 
-        if (command == MigrationCommand.Migrate
+        if ((command is MigrationCommand.Migrate
+                or MigrationCommand.ResetTestDatabase)
             && (targetVersion is not null
                 || backupPath is not null
                 || backupSha256 is not null))
         {
             return MigrationCommandParseResult.Failure(
                 "Backup and baseline options are only valid for baseline-existing.");
+        }
+
+        if (command == MigrationCommand.ResetTestDatabase
+            && !string.Equals(
+                connectionEnvironmentVariable,
+                TestDatabaseSafetyGuard
+                    .MigrationConnectionEnvironmentVariable,
+                StringComparison.Ordinal))
+        {
+            return MigrationCommandParseResult.Failure(
+                "reset-test requires --connection-env "
+                + TestDatabaseSafetyGuard
+                    .MigrationConnectionEnvironmentVariable
+                + ".");
         }
 
         if (command == MigrationCommand.BaselineExisting)

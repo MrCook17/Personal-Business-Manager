@@ -20,6 +20,35 @@ so a password is not written to shell history.
 Use an account with schema privileges limited to the selected application or
 test database. Do not reuse the normal `PBM_CONNECTION_STRING` runtime account.
 
+## Reset the approved integration-test database
+
+P2-07 defines one local integration-test target:
+
+```text
+personal_business_manager_test
+```
+
+Its migration connection must use
+`personal_business_test_migrator@localhost`. The command rejects the normal
+development database, production-like names, missing test markers, remote
+hosts, `root`, the wrong account, the normal migration environment variable,
+and an inexact confirmation.
+
+The command is intentionally destructive to the approved test database. It
+drops and recreates that database, applies all migrations through the normal
+migration runner, and verifies the resulting schema and seeds:
+
+```powershell
+dotnet run --project tools/PersonalBusinessManager.DatabaseMigrator -- `
+  reset-test `
+  --connection-env PBM_TEST_MIGRATION_CONNECTION_STRING `
+  --confirm "RESET TEST DATABASE personal_business_manager_test"
+```
+
+The test runtime account is `personal_business_test_app@localhost` and uses
+the separate `PBM_TEST_CONNECTION_STRING` variable. It has data privileges
+only and cannot reset or migrate the database.
+
 ## Read-only status
 
 ```powershell

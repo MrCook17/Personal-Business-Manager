@@ -121,6 +121,64 @@ public sealed class MigrationCommandOptionsTests
     }
 
     [Fact]
+    public void ParseAcceptsGuardedTestResetCommand()
+    {
+        MigrationCommandParseResult result =
+            MigrationCommandOptions.Parse(
+            [
+                "reset-test",
+                "--connection-env",
+                "PBM_TEST_MIGRATION_CONNECTION_STRING",
+                "--confirm",
+                "RESET TEST DATABASE personal_business_manager_test",
+            ]);
+
+        Assert.True(result.IsSuccessful);
+        Assert.NotNull(result.Options);
+        Assert.Equal(
+            MigrationCommand.ResetTestDatabase,
+            result.Options.Command);
+    }
+
+    [Fact]
+    public void ParseTestResetRequiresTestMigrationVariable()
+    {
+        MigrationCommandParseResult result =
+            MigrationCommandOptions.Parse(
+            [
+                "reset-test",
+                "--connection-env",
+                "PBM_MIGRATION_CONNECTION_STRING",
+                "--confirm",
+                "RESET TEST DATABASE personal_business_manager_test",
+            ]);
+
+        Assert.False(result.IsSuccessful);
+        Assert.Contains(
+            "PBM_TEST_MIGRATION_CONNECTION_STRING",
+            result.Error,
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ParseTestResetRequiresExplicitConfirmation()
+    {
+        MigrationCommandParseResult result =
+            MigrationCommandOptions.Parse(
+            [
+                "reset-test",
+                "--connection-env",
+                "PBM_TEST_MIGRATION_CONNECTION_STRING",
+            ]);
+
+        Assert.False(result.IsSuccessful);
+        Assert.Contains(
+            "--confirm",
+            result.Error,
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void ParseAcceptsReadOnlyBaselineVerification()
     {
         MigrationCommandParseResult result =

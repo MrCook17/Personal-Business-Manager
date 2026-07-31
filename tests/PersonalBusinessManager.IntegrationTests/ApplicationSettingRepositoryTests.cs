@@ -1,5 +1,4 @@
 using Microsoft.Extensions.DependencyInjection;
-using MySqlConnector;
 using PersonalBusinessManager.Core.Application.Contracts;
 using PersonalBusinessManager.Core.Application.Dtos;
 using PersonalBusinessManager.Infrastructure;
@@ -10,9 +9,6 @@ namespace PersonalBusinessManager.IntegrationTests;
 
 public sealed class ApplicationSettingRepositoryTests
 {
-    private const string TestConnectionEnvironmentVariable =
-        "PBM_TEST_CONNECTION_STRING";
-
     [Fact]
     public void InfrastructureRegistersApplicationSettingRepository()
     {
@@ -38,7 +34,7 @@ public sealed class ApplicationSettingRepositoryTests
         Assert.NotSame(repository, secondRepository);
     }
 
-    [MariaDbRepositoryFact]
+    [MariaDbTestFact]
     public async Task GetByKeyAsyncReadsSeededApplicationSetting()
     {
         ApplicationSettingRepository repository = CreateRepository();
@@ -59,7 +55,7 @@ public sealed class ApplicationSettingRepositoryTests
         Assert.Null(setting.UpdatedByUserId);
     }
 
-    [MariaDbRepositoryFact]
+    [MariaDbTestFact]
     public async Task InsertUpdateAndDeleteRoundTripCleansUpTestSetting()
     {
         ApplicationSettingRepository repository = CreateRepository();
@@ -133,52 +129,11 @@ public sealed class ApplicationSettingRepositoryTests
 
     private static ApplicationSettingRepository CreateRepository()
     {
-        string connectionString = GetSafeTestConnectionString();
+        string connectionString =
+            MariaDbTestEnvironment
+                .GetRequiredRuntimeConnectionString();
 
         return new ApplicationSettingRepository(
             new MariaDbConnectionFactory(connectionString));
-    }
-
-    private static string GetSafeTestConnectionString()
-    {
-        string connectionString =
-            Environment.GetEnvironmentVariable(
-                TestConnectionEnvironmentVariable)
-            ?? throw new InvalidOperationException(
-                $"{TestConnectionEnvironmentVariable} is not configured.");
-        var builder = new MySqlConnectionStringBuilder(
-            connectionString);
-        string databaseName = builder.Database;
-
-        if (string.Equals(
-                databaseName,
-                "personal_business_manager",
-                StringComparison.OrdinalIgnoreCase)
-            || !databaseName.Contains(
-                "test",
-                StringComparison.OrdinalIgnoreCase))
-        {
-            throw new InvalidOperationException(
-                "Repository integration tests require a dedicated "
-                + "database whose name contains 'test'.");
-        }
-
-        return connectionString;
-    }
-
-    private sealed class MariaDbRepositoryFactAttribute
-        : FactAttribute
-    {
-        public MariaDbRepositoryFactAttribute()
-        {
-            if (string.IsNullOrWhiteSpace(
-                    Environment.GetEnvironmentVariable(
-                        TestConnectionEnvironmentVariable)))
-            {
-                Skip =
-                    $"Set {TestConnectionEnvironmentVariable} to run "
-                    + "MariaDB repository integration tests.";
-            }
-        }
     }
 }

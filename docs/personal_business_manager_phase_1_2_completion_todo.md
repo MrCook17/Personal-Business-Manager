@@ -493,7 +493,7 @@ docs/decisions/migration_baseline_strategy.md
 
 **Verification:**
 
-- [ ] Empty test database can be created through migrations.
+- [x] Empty test database can be created through migrations.
 - [ ] Copy of existing database can be baselined without table recreation.
 - [ ] Both schemas compare successfully.
 
@@ -878,9 +878,8 @@ Use another harmless existing foundation table, provided the audit test proves b
   Dapper usage is directly exercised through `QuerySingleOrDefaultAsync`,
   `QuerySingleAsync`, `ExecuteAsync`, and `CommandDefinition`.
 - Integration tests use `PBM_TEST_CONNECTION_STRING`. The MariaDB tests are
-  visibly skipped when it is absent, reject the real
-  `personal_business_manager` database, and require a database name containing
-  `test`; P2-07 remains responsible for the reusable creation/reset harness.
+  visibly skipped when it is absent and reject unsafe targets. P2-07 now
+  provides the reusable exact-target guard and migration-driven reset harness.
 - Final database proof used the disposable
   `pbm_p206_repository_test_20260731_100456` database built through migrations
   `1` through `13`. Repository operations ran through a generated, temporary
@@ -907,29 +906,67 @@ Use another harmless existing foundation table, provided the audit test proves b
 **Blocks Phase 3:** Yes for full Phase 2 completion  
 **Estimated size:** Medium
 
-- [ ] Define a separate test database name.
-- [ ] Ensure tests refuse to run when the database name is the normal development database.
-- [ ] Use a separate test connection variable, for example:
+- [x] Define a separate test database name.
+- [x] Ensure tests refuse to run when the database name is the normal development database.
+- [x] Use a separate test connection variable, for example:
 
 ```text
 PBM_TEST_CONNECTION_STRING
 ```
 
-- [ ] Add a guard that rejects:
+- [x] Add a guard that rejects:
   - `personal_business_manager`;
   - production-like names;
   - missing test marker.
-- [ ] Create/reset the test database through the migration runner.
-- [ ] Do not use `root` as the application runtime account.
-- [ ] Allow a migration/admin account only for test database setup if necessary.
-- [ ] Ensure tests clean up inserted records.
-- [ ] Consider Testcontainers later if it works reliably in the environment.
+- [x] Create/reset the test database through the migration runner.
+- [x] Do not use `root` as the application runtime account.
+- [x] Allow a migration/admin account only for test database setup if necessary.
+- [x] Ensure tests clean up inserted records.
+- [x] Consider Testcontainers later if it works reliably in the environment.
 
 **Evidence required:**
 
 - Test configuration documentation.
 - Guard test.
 - No real application data modified by test execution.
+
+**Completion evidence (31 July 2026):**
+
+- The fixed local target is `personal_business_manager_test`; the runtime and
+  migration variables are `PBM_TEST_CONNECTION_STRING` and
+  `PBM_TEST_MIGRATION_CONNECTION_STRING` respectively.
+- Shared guards require localhost, the exact test database, the exact account
+  for the connection role, and an `_test` suffix. They reject the normal
+  development database, production-like tokens, other test names, remote
+  hosts, missing values, `root`, and crossed runtime/migration accounts.
+- The migration tool now provides an explicit `reset-test` command. It accepts
+  only the test migration variable, requires the exact confirmation
+  `RESET TEST DATABASE personal_business_manager_test`, takes an advisory
+  reset lock, drops/recreates only that database, applies the normal migration
+  runner, and performs full post-migration verification. There is no force
+  option.
+- An intentional unsafe command pointed the test migration variable at
+  `personal_business_manager`. It was refused before reset with exit code `2`;
+  direct inspection confirmed the live 18 settings and migration history
+  `1` through `13` were unchanged.
+- Dedicated localhost accounts were created with independently generated
+  random passwords. `personal_business_test_app` has only `SELECT`, `INSERT`,
+  `UPDATE`, and `DELETE`. `personal_business_test_migrator` has only the
+  documented database-scoped data/schema privileges and no global
+  administration or `GRANT OPTION`. Neither test role uses `root`.
+- The approved database was reset from empty through migrations `1` through
+  `13` and matched the version-13 schema/data fingerprints: 31 application
+  tables, 959 metadata records, 116 checks, and 39 seed rows.
+- The database-enabled suite passed 59 of 59 tests with no failures or skips.
+  Runtime evidence identified `personal_business_test_app@localhost`, retained
+  all 18 seeded settings and exact history `1` through `13`, and found zero
+  repository test rows after cleanup.
+- Configuration, first-time grants, reset/test commands, safety behavior,
+  cleanup rules, credential handling, and the deferred Testcontainers decision
+  are documented in
+  `docs/operations/mariadb_integration_test_environment.md`.
+- Generated credentials were not written to the repository. The normal
+  development database was never used for test reads or writes.
 
 ---
 
@@ -964,7 +1001,7 @@ Add tests for:
 
 - [ ] MariaDB connection factory.
 - [ ] Database health service.
-- [ ] Migration application to an empty test database.
+- [x] Migration application to an empty test database.
 - [ ] Baseline handling for an existing-schema copy.
 - [x] Dapper repository read.
 - [x] Dapper repository write.
@@ -987,7 +1024,7 @@ dotnet test PersonalBusinessManager.slnx
 
 - [ ] All meaningful tests pass.
 - [ ] No empty placeholder tests remain.
-- [ ] Tests cannot target the real database.
+- [x] Tests cannot target the real database.
 
 ---
 
@@ -1279,8 +1316,8 @@ nothing to commit, working tree clean
 - [ ] `dotnet test PersonalBusinessManager.slnx` succeeds.
 - [ ] Empty template tests have been removed.
 - [ ] Meaningful Core unit tests pass.
-- [ ] Meaningful MariaDB integration tests pass.
-- [ ] Test database guards pass.
+- [x] Meaningful MariaDB integration tests pass.
+- [x] Test database guards pass.
 
 ## Runtime
 
@@ -1301,7 +1338,7 @@ nothing to commit, working tree clean
 - [ ] Runtime grants are least privilege.
 - [ ] Migration/admin access is separate where practical.
 - [ ] FluentMigrator version table exists.
-- [ ] Empty test database is created through migrations.
+- [x] Empty test database is created through migrations.
 - [ ] Existing schema baseline has been tested.
 - [ ] Existing development database is safely baselined.
 - [x] Sample Dapper repository read/write passes.
@@ -1340,7 +1377,7 @@ Phase 2 is complete only when all of the following are true:
 - [ ] Dedicated MariaDB runtime account is in use.
 - [x] Dapper is used by a real repository.
 - [ ] FluentMigrator is configured.
-- [ ] Initial migrations build an empty test database.
+- [x] Initial migrations build an empty test database.
 - [ ] Existing schema is safely baselined.
 - [ ] Meaningful unit and integration tests pass.
 - [ ] Main dark shell infrastructure is complete.

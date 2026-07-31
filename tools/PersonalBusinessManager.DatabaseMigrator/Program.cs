@@ -40,6 +40,27 @@ internal static class Program
             return 2;
         }
 
+        if (string.Equals(
+                parseResult.Options
+                    .ConnectionEnvironmentVariable,
+                TestDatabaseSafetyGuard
+                    .MigrationConnectionEnvironmentVariable,
+                StringComparison.Ordinal))
+        {
+            TestDatabaseTargetValidation testTarget =
+                TestDatabaseSafetyGuard
+                    .ValidateMigrationConnectionString(
+                        migrationConnectionString);
+
+            if (!testTarget.IsSafe)
+            {
+                Console.Error.WriteLine(
+                    testTarget.Error
+                        ?? "The selected test migration target is unsafe.");
+                return 2;
+            }
+        }
+
         var services = new ServiceCollection();
 
         services.AddLogging(logging => logging
@@ -71,6 +92,13 @@ internal static class Program
             BaselineRegistrationService baselineService =
                 serviceProvider.GetRequiredService<
                     BaselineRegistrationService>();
+            var testResetService =
+                new TestDatabaseResetService(
+                    migrationConnectionString,
+                    runner,
+                    verifier,
+                    serviceProvider.GetRequiredService<
+                        ILogger<TestDatabaseResetService>>());
 
             using var cancellationSource =
                 new CancellationTokenSource();
@@ -99,6 +127,13 @@ internal static class Program
                 MigrationCommand.Migrate =>
                     await MigrateAsync(
                         runner,
+                        logger,
+                        parseResult.Options.Confirmation,
+                        cancellationSource.Token),
+
+                MigrationCommand.ResetTestDatabase =>
+                    await ResetTestDatabaseAsync(
+                        testResetService,
                         logger,
                         parseResult.Options.Confirmation,
                         cancellationSource.Token),
@@ -263,6 +298,38 @@ internal static class Program
         return 1;
     }
 
+    private static async Task<int> ResetTestDatabaseAsync(
+        TestDatabaseResetService resetService,
+        ILogger logger,
+        string? confirmation,
+        CancellationToken cancellationToken)
+    {
+        TestDatabaseResetResult result =
+            await resetService.ResetAsync(
+                confirmation,
+                cancellationToken);
+
+        if (result.Verification is not null)
+        {
+            ReportVerification(
+                logger,
+                result.Verification);
+        }
+
+        if (result.Succeeded)
+        {
+            DatabaseMigratorLog.ResultSucceeded(
+                logger,
+                result.Message);
+            return 0;
+        }
+
+        DatabaseMigratorLog.ResultFailed(
+            logger,
+            result.Message);
+        return 1;
+    }
+
     private static async Task<int> BaselineExistingAsync(
         BaselineRegistrationService baselineService,
         ILogger logger,
@@ -409,6 +476,9 @@ internal static class Program
 
             Apply pending migrations:
               dotnet run --project tools/PersonalBusinessManager.DatabaseMigrator -- migrate --connection-env PBM_MIGRATION_CONNECTION_STRING --confirm "MIGRATE <database_name>"
+
+            Recreate and migrate the one approved local test database:
+              dotnet run --project tools/PersonalBusinessManager.DatabaseMigrator -- reset-test --connection-env PBM_TEST_MIGRATION_CONNECTION_STRING --confirm "RESET TEST DATABASE personal_business_manager_test"
 
             Register a verified existing version-13 schema:
               dotnet run --project tools/PersonalBusinessManager.DatabaseMigrator -- baseline-existing --connection-env PBM_MIGRATION_CONNECTION_STRING --to 13 --backup-path "<verified-backup.sql>" --backup-sha256 "<sha256>" --confirm "BASELINE <database_name> TO 13"
