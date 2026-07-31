@@ -21,6 +21,16 @@ public static class MigrationServiceCollectionExtensions
             provider => new MigrationDatabaseInspector(
                 migrationConnectionString,
                 provider.GetRequiredService<MigrationCatalog>()));
+        services.AddSingleton(
+            provider => new BaselineSchemaVerifier(
+                migrationConnectionString,
+                provider.GetRequiredService<MigrationCatalog>()));
+        services.AddSingleton(
+            provider => new BaselineRegistrationService(
+                migrationConnectionString,
+                provider.GetRequiredService<MigrationCatalog>(),
+                provider.GetRequiredService<
+                    BaselineSchemaVerifier>()));
 
         services
             .AddFluentMigratorCore()

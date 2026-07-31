@@ -65,6 +65,12 @@ internal static class Program
             MigrationRunnerService runner =
                 serviceProvider.GetRequiredService<
                     MigrationRunnerService>();
+            BaselineSchemaVerifier verifier =
+                serviceProvider.GetRequiredService<
+                    BaselineSchemaVerifier>();
+            BaselineRegistrationService baselineService =
+                serviceProvider.GetRequiredService<
+                    BaselineRegistrationService>();
 
             using var cancellationSource =
                 new CancellationTokenSource();
@@ -83,11 +89,32 @@ internal static class Program
                         logger,
                         cancellationSource.Token),
 
+                MigrationCommand.VerifyBaseline =>
+                    await VerifyAsync(
+                        verifier,
+                        logger,
+                        baselineEligibility: true,
+                        cancellationSource.Token),
+
                 MigrationCommand.Migrate =>
                     await MigrateAsync(
                         runner,
                         logger,
                         parseResult.Options.Confirmation,
+                        cancellationSource.Token),
+
+                MigrationCommand.BaselineExisting =>
+                    await BaselineExistingAsync(
+                        baselineService,
+                        logger,
+                        parseResult.Options,
+                        cancellationSource.Token),
+
+                MigrationCommand.Verify =>
+                    await VerifyAsync(
+                        verifier,
+                        logger,
+                        baselineEligibility: false,
                         cancellationSource.Token),
 
                 _ => 2,
@@ -202,6 +229,153 @@ internal static class Program
         return 1;
     }
 
+    private static async Task<int> VerifyAsync(
+        BaselineSchemaVerifier verifier,
+        ILogger logger,
+        bool baselineEligibility,
+        CancellationToken cancellationToken)
+    {
+        DatabaseMigratorLog.VerificationStarted(
+            logger,
+            baselineEligibility
+                ? "baseline eligibility"
+                : "current schema");
+
+        BaselineVerificationResult result =
+            baselineEligibility
+                ? await verifier.VerifyBaselineEligibilityAsync(
+                    cancellationToken)
+                : await verifier.VerifyCurrentAsync(
+                    cancellationToken);
+
+        ReportVerification(logger, result);
+
+        if (result.Succeeded)
+        {
+            DatabaseMigratorLog.VerificationSucceeded(logger);
+            return 0;
+        }
+
+        DatabaseMigratorLog.VerificationFailed(
+            logger,
+            result.Problems.Count);
+
+        return 1;
+    }
+
+    private static async Task<int> BaselineExistingAsync(
+        BaselineRegistrationService baselineService,
+        ILogger logger,
+        MigrationCommandOptions options,
+        CancellationToken cancellationToken)
+    {
+        DatabaseMigratorLog.BaselineStarted(
+            logger,
+            options.TargetVersion
+                ?? BaselineSchemaManifest.Version);
+
+        BaselineRegistrationResult result =
+            await baselineService.RegisterExistingAsync(
+                options.TargetVersion
+                    ?? BaselineSchemaManifest.Version,
+                options.Confirmation,
+                options.BackupPath,
+                options.BackupSha256,
+                cancellationToken);
+
+        if (result.Verification is not null)
+        {
+            ReportVerification(
+                logger,
+                result.Verification);
+        }
+
+        if (result.Backup is not null)
+        {
+            DatabaseMigratorLog.BackupVerified(
+                logger,
+                result.Backup.FileName,
+                result.Backup.SizeBytes,
+                result.Backup.Sha256);
+        }
+
+        DatabaseMigratorLog.BuildIdentifier(
+            logger,
+            result.BuildIdentifier);
+
+        if (logger.IsEnabled(LogLevel.Information))
+        {
+            foreach (long version in result.RegisteredVersions)
+            {
+                DatabaseMigratorLog.BaselineVersionRegistered(
+                    logger,
+                    version);
+            }
+        }
+
+        if (logger.IsEnabled(LogLevel.Information)
+            && result.BeforeData is not null
+            && result.AfterData is not null)
+        {
+            bool dataEqual = string.Equals(
+                result.BeforeData.FingerprintSha256,
+                result.AfterData.FingerprintSha256,
+                StringComparison.Ordinal);
+
+            DatabaseMigratorLog.DataComparison(
+                logger,
+                result.BeforeData.FingerprintSha256,
+                result.AfterData.FingerprintSha256,
+                dataEqual);
+        }
+
+        if (result.Succeeded)
+        {
+            DatabaseMigratorLog.ResultSucceeded(
+                logger,
+                result.Message);
+            return 0;
+        }
+
+        DatabaseMigratorLog.ResultFailed(
+            logger,
+            result.Message);
+        return 1;
+    }
+
+    private static void ReportVerification(
+        ILogger logger,
+        BaselineVerificationResult result)
+    {
+        DatabaseMigratorLog.TargetIdentity(
+            logger,
+            result.ServerHost,
+            result.DatabaseName,
+            result.DatabaseAccount,
+            result.ServerVersion);
+        DatabaseMigratorLog.SchemaFingerprint(
+            logger,
+            result.Schema.FingerprintSha256,
+            result.Schema.MetadataRecordCount,
+            result.Schema.ApplicationTableCount,
+            result.Schema.CheckConstraintCount);
+        DatabaseMigratorLog.DataFingerprint(
+            logger,
+            result.Data.FingerprintSha256,
+            result.Data.TableCount,
+            result.Data.TotalRows);
+
+        if (logger.IsEnabled(LogLevel.Warning))
+        {
+            foreach (string problem in result.Problems)
+            {
+                DatabaseMigratorLog.VerificationProblem(
+                    logger,
+                    problem);
+            }
+        }
+    }
+
     private static string? ResolveEnvironmentVariable(
         string variableName)
     {
@@ -230,8 +404,17 @@ internal static class Program
             Read-only status:
               dotnet run --project tools/PersonalBusinessManager.DatabaseMigrator -- status --connection-env PBM_MIGRATION_CONNECTION_STRING
 
+            Read-only baseline eligibility verification:
+              dotnet run --project tools/PersonalBusinessManager.DatabaseMigrator -- verify-baseline --connection-env PBM_MIGRATION_CONNECTION_STRING
+
             Apply pending migrations:
               dotnet run --project tools/PersonalBusinessManager.DatabaseMigrator -- migrate --connection-env PBM_MIGRATION_CONNECTION_STRING --confirm "MIGRATE <database_name>"
+
+            Register a verified existing version-13 schema:
+              dotnet run --project tools/PersonalBusinessManager.DatabaseMigrator -- baseline-existing --connection-env PBM_MIGRATION_CONNECTION_STRING --to 13 --backup-path "<verified-backup.sql>" --backup-sha256 "<sha256>" --confirm "BASELINE <database_name> TO 13"
+
+            Read-only current-schema verification:
+              dotnet run --project tools/PersonalBusinessManager.DatabaseMigrator -- verify --connection-env PBM_MIGRATION_CONNECTION_STRING
 
             The connection value is read from the explicitly named environment
             variable. A raw connection string is not accepted on the command line.
@@ -352,4 +535,109 @@ internal static partial class DatabaseMigratorLog
     public static partial void ResultFailed(
         ILogger logger,
         string resultMessage);
+
+    [LoggerMessage(
+        EventId = 3013,
+        Level = LogLevel.Information,
+        Message = "Read-only {VerificationKind} verification started.")]
+    public static partial void VerificationStarted(
+        ILogger logger,
+        string verificationKind);
+
+    [LoggerMessage(
+        EventId = 3014,
+        Level = LogLevel.Information,
+        Message =
+            "Application-schema fingerprint {Fingerprint}; metadata records: {MetadataRecordCount}; application tables: {ApplicationTableCount}; checks: {CheckConstraintCount}.")]
+    public static partial void SchemaFingerprint(
+        ILogger logger,
+        string fingerprint,
+        int metadataRecordCount,
+        int applicationTableCount,
+        int checkConstraintCount);
+
+    [LoggerMessage(
+        EventId = 3015,
+        Level = LogLevel.Information,
+        Message =
+            "Application-data summary fingerprint {Fingerprint}; tables: {TableCount}; total rows: {TotalRows}.")]
+    public static partial void DataFingerprint(
+        ILogger logger,
+        string fingerprint,
+        int tableCount,
+        long totalRows);
+
+    [LoggerMessage(
+        EventId = 3016,
+        Level = LogLevel.Warning,
+        Message = "Verification problem: {Problem}")]
+    public static partial void VerificationProblem(
+        ILogger logger,
+        string problem);
+
+    [LoggerMessage(
+        EventId = 3017,
+        Level = LogLevel.Information,
+        Message = "Schema verification succeeded.")]
+    public static partial void VerificationSucceeded(
+        ILogger logger);
+
+    [LoggerMessage(
+        EventId = 3018,
+        Level = LogLevel.Error,
+        Message =
+            "Schema verification failed with {ProblemCount} problem(s).")]
+    public static partial void VerificationFailed(
+        ILogger logger,
+        int problemCount);
+
+    [LoggerMessage(
+        EventId = 3019,
+        Level = LogLevel.Information,
+        Message =
+            "Controlled baseline registration started for target version {TargetVersion}.")]
+    public static partial void BaselineStarted(
+        ILogger logger,
+        int targetVersion);
+
+    [LoggerMessage(
+        EventId = 3020,
+        Level = LogLevel.Information,
+        Message =
+            "Verified backup file {BackupFileName}; size: {SizeBytes} bytes; SHA-256: {Sha256}.")]
+    public static partial void BackupVerified(
+        ILogger logger,
+        string backupFileName,
+        long sizeBytes,
+        string sha256);
+
+    [LoggerMessage(
+        EventId = 3021,
+        Level = LogLevel.Information,
+        Message =
+            "Migration assembly build identifier: {BuildIdentifier}.")]
+    public static partial void BuildIdentifier(
+        ILogger logger,
+        string buildIdentifier);
+
+    [LoggerMessage(
+        EventId = 3022,
+        Level = LogLevel.Information,
+        Message =
+            "Registered existing baseline migration version {Version}; no Up method was executed.")]
+    public static partial void BaselineVersionRegistered(
+        ILogger logger,
+        long version);
+
+    [LoggerMessage(
+        EventId = 3023,
+        Level = LogLevel.Information,
+        SkipEnabledCheck = true,
+        Message =
+            "Before data fingerprint: {BeforeFingerprint}; after data fingerprint: {AfterFingerprint}; equal: {Equal}.")]
+    public static partial void DataComparison(
+        ILogger logger,
+        string beforeFingerprint,
+        string afterFingerprint,
+        bool equal);
 }

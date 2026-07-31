@@ -119,4 +119,117 @@ public sealed class MigrationCommandOptionsTests
             "MIGRATE pbm_test",
             result.Options.Confirmation);
     }
+
+    [Fact]
+    public void ParseAcceptsReadOnlyBaselineVerification()
+    {
+        MigrationCommandParseResult result =
+            MigrationCommandOptions.Parse(
+            [
+                "verify-baseline",
+                "--connection-env",
+                "PBM_TEST_MIGRATION_CONNECTION_STRING",
+            ]);
+
+        Assert.True(result.IsSuccessful);
+        Assert.NotNull(result.Options);
+        Assert.Equal(
+            MigrationCommand.VerifyBaseline,
+            result.Options.Command);
+    }
+
+    [Fact]
+    public void ParseAcceptsReadOnlyCurrentVerification()
+    {
+        MigrationCommandParseResult result =
+            MigrationCommandOptions.Parse(
+            [
+                "verify",
+                "--connection-env",
+                "PBM_MIGRATION_CONNECTION_STRING",
+            ]);
+
+        Assert.True(result.IsSuccessful);
+        Assert.NotNull(result.Options);
+        Assert.Equal(
+            MigrationCommand.Verify,
+            result.Options.Command);
+    }
+
+    [Fact]
+    public void ParseBaselineRequiresExactVersionThirteen()
+    {
+        MigrationCommandParseResult result =
+            MigrationCommandOptions.Parse(
+            [
+                "baseline-existing",
+                "--connection-env",
+                "PBM_MIGRATION_CONNECTION_STRING",
+                "--to",
+                "12",
+                "--backup-path",
+                "backup.sql",
+                "--backup-sha256",
+                new string('a', 64),
+                "--confirm",
+                "BASELINE personal_business_manager TO 12",
+            ]);
+
+        Assert.False(result.IsSuccessful);
+        Assert.Contains(
+            "--to 13",
+            result.Error,
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ParseBaselineRequiresBackupHash()
+    {
+        MigrationCommandParseResult result =
+            MigrationCommandOptions.Parse(
+            [
+                "baseline-existing",
+                "--connection-env",
+                "PBM_MIGRATION_CONNECTION_STRING",
+                "--to",
+                "13",
+                "--backup-path",
+                "backup.sql",
+                "--confirm",
+                "BASELINE personal_business_manager TO 13",
+            ]);
+
+        Assert.False(result.IsSuccessful);
+        Assert.Contains(
+            "--backup-sha256",
+            result.Error,
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ParseAcceptsFullyGuardedBaselineCommand()
+    {
+        MigrationCommandParseResult result =
+            MigrationCommandOptions.Parse(
+            [
+                "baseline-existing",
+                "--connection-env",
+                "PBM_MIGRATION_CONNECTION_STRING",
+                "--to",
+                "13",
+                "--backup-path",
+                "backup.sql",
+                "--backup-sha256",
+                new string('a', 64),
+                "--confirm",
+                "BASELINE personal_business_manager TO 13",
+            ]);
+
+        Assert.True(result.IsSuccessful);
+        Assert.NotNull(result.Options);
+        Assert.Equal(
+            MigrationCommand.BaselineExisting,
+            result.Options.Command);
+        Assert.Equal(13, result.Options.TargetVersion);
+    }
 }

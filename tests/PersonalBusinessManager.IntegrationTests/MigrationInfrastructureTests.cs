@@ -72,6 +72,12 @@ public sealed class MigrationInfrastructureTests
         Assert.NotNull(
             provider.GetRequiredService<
                 MigrationRunnerService>());
+        Assert.NotNull(
+            provider.GetRequiredService<
+                BaselineSchemaVerifier>());
+        Assert.NotNull(
+            provider.GetRequiredService<
+                BaselineRegistrationService>());
     }
 
     [Fact]
