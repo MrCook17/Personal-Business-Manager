@@ -162,3 +162,85 @@ Record without credentials:
 - row-count and financial-aggregate comparison;
 - final `status`, `verify`, and separate `migrate` results;
 - baseline log filename and SHA-256.
+
+## 8. P2-05 execution record — 31 July 2026
+
+The first controlled use of this procedure completed successfully against
+MariaDB `10.4.32` on the local development server.
+
+### Committed tool
+
+- Tooling commit: `d3853ff`
+- Executed build:
+  `1.0.0+d3853ff99d7c720f51ad0351f6d0fbf0422e7a31`
+- Repository state before execution: clean
+- Approved baseline: exactly versions `1` through `13`
+
+### Restore-test evidence
+
+- Backup:
+  `Backups/P2-05/personal_business_manager_restore_test_20260731_093351Z.sql`
+- Size: 70,678 bytes
+- SHA-256:
+  `ea29875061c80a98483a8da7249565d7776cf977cf782eadb40939bffb0c8f0f`
+- Final committed-build restored copy:
+  `pbm_p205_committed_copy_20260731`
+- Restore result: success
+- Baseline result: versions `1` through `13` registered; no `Up()` method
+  executed
+- Repeat result: refused safely because migration history was no longer empty
+- Later migration result: no pending migration above version `13`
+- Baseline log: `committed_copy_baseline_d3853ff.log`
+- Baseline log SHA-256:
+  `15a0b86c484b4d129ad70b9c0cb1633f161f49c9705e6d5056e5db22e61497dc`
+- Post-verification log: `committed_copy_postverify_d3853ff.log`
+- Post-verification log SHA-256:
+  `d66272f679043328bd4e307795eeb1c10f61397c6f403c2be141ca081ba05a9e`
+
+### Schema and data comparison
+
+- Before/after schema fingerprint:
+  `7a85fdf6b3c6bd5d4a2d5ba1f47c33af24f5a46714b89a07939b19a24fb79b6f`
+- Normalized schema records: 959
+- Application tables: 31
+- Check constraints evaluated: 116
+- Before/after data fingerprint:
+  `6e620fcec64f25cdc2a7638496fd697bee2a5fd4062837327ada4671566987cb`
+- Row counts compared: all 31 tables
+- Total application rows before/after: 39
+- Financial aggregates compared: all 14 approved totals
+- Financial totals before/after: zero
+- Unexpected application schema or data change: none
+
+### Real development baseline
+
+- Database: `personal_business_manager`
+- Fresh backup:
+  `Backups/P2-05/personal_business_manager_pre_baseline_20260731_093647Z.sql`
+- Size: 70,678 bytes
+- SHA-256:
+  `52a52b91f2b7d6d88da32d0310100e02a1d3d110b2e8b0ffc80bacaf147258eb`
+- Preflight: passed
+- Registered history: exactly `1,2,3,4,5,6,7,8,9,10,11,12,13`
+- `schema_information.schema_version`: `13`
+- Post-baseline `status`: passed
+- Post-baseline read-only `verify`: passed
+- Separate `migrate`: passed; no pending migration
+- Baseline log: `live_baseline_d3853ff_20260731_093647Z.log`
+- Baseline log SHA-256:
+  `0fc1847aadfdbfec883d961a1e46ceea57cf31dfca4ea67fc13898c071c66647`
+- Post-verification log:
+  `live_postverify_d3853ff_20260731_093647Z.log`
+- Post-verification log SHA-256:
+  `e8ba5b95982f054e19f545da7de82a66ad8733f4ad79e9646b05555adc5a067b`
+- Credential or connection-string content in evidence logs: none
+
+The disposable reference, first restore, and committed-build restore databases
+were dropped after verification. Both logical backups and all logs remain in
+the ignored `Backups/P2-05` directory. They contain development data and must
+be protected, retained until the next verified backup, and never committed.
+
+The supplied runtime and migrator passwords had already been disclosed and
+were therefore not used or stored by this execution. Rotate both credentials
+before the next account-specific health or migration operation, then store
+them using the approved Windows credential mechanism.

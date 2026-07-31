@@ -736,15 +736,15 @@ Implement the documented migration sequence:
 **Blocks Phase 3:** Yes for full Phase 2 completion  
 **Estimated size:** Medium
 
-- [ ] Back up the current development database.
-- [ ] Restore it into a disposable test database.
-- [ ] Run the controlled baseline process against the disposable copy.
-- [ ] Confirm no `CREATE TABLE` migration is replayed.
-- [ ] Confirm the version table records the approved baseline.
-- [ ] Confirm no data or schema object changed unexpectedly.
-- [ ] Run all later pending migrations successfully.
-- [ ] Document the production/development baseline procedure.
-- [ ] Only then baseline the real development database.
+- [x] Back up the current development database.
+- [x] Restore it into a disposable test database.
+- [x] Run the controlled baseline process against the disposable copy.
+- [x] Confirm no `CREATE TABLE` migration is replayed.
+- [x] Confirm the version table records the approved baseline.
+- [x] Confirm no data or schema object changed unexpectedly.
+- [x] Run all later pending migrations successfully.
+- [x] Document the production/development baseline procedure.
+- [x] Only then baseline the real development database.
 
 **Evidence required:**
 
@@ -752,6 +752,60 @@ Implement the documented migration sequence:
 - Schema comparison before and after.
 - Row-count comparison.
 - Backup path and restore-test result.
+
+**Completion evidence (31 July 2026):**
+
+- Guarded baseline tooling, its sealed version-13 manifest, and its tests were
+  committed as `d3853ff` before any controlled baseline was run. The executed
+  build identified itself as
+  `1.0.0+d3853ff99d7c720f51ad0351f6d0fbf0422e7a31`.
+- A full schema/data/routine/trigger/event dump was retained at
+  `Backups/P2-05/personal_business_manager_restore_test_20260731_093351Z.sql`
+  (70,678 bytes; SHA-256
+  `ea29875061c80a98483a8da7249565d7776cf977cf782eadb40939bffb0c8f0f`).
+  The exact hashed dump restored successfully to the disposable
+  `pbm_p205_committed_copy_20260731` database.
+- Read-only preflight verified the approved schema fingerprint
+  `7a85fdf6b3c6bd5d4a2d5ba1f47c33af24f5a46714b89a07939b19a24fb79b6f`
+  across 959 normalized metadata records, 31 application tables, and 116
+  checks. It also validated required seeds, foreign keys, check constraints,
+  row integrity, and the baseline-eligible history state.
+- The committed-build rehearsal registered exactly versions `1` through `13`.
+  Its log states for every version that no migration `Up()` method was
+  executed. `status` and direct history inspection confirmed 13 rows with
+  minimum version `1`, maximum version `13`, and no gaps.
+- The before/after data fingerprint was
+  `6e620fcec64f25cdc2a7638496fd697bee2a5fd4062837327ada4671566987cb`
+  on both sides. It covers exact row counts for all 31 tables and 14 financial
+  aggregates. Both snapshots contained 39 rows in total; all financial
+  aggregates were zero. The application-schema fingerprint was also unchanged.
+- A repeated rehearsal registration refused safely because history was no
+  longer empty. The separately invoked `migrate` command found no migration
+  above version `13` pending.
+- Disposable evidence logs are
+  `committed_copy_baseline_d3853ff.log` (SHA-256
+  `15a0b86c484b4d129ad70b9c0cb1633f161f49c9705e6d5056e5db22e61497dc`)
+  and `committed_copy_postverify_d3853ff.log` (SHA-256
+  `d66272f679043328bd4e307795eeb1c10f61397c6f403c2be141ca081ba05a9e`).
+  They are retained under the ignored `Backups/P2-05` directory and contain no
+  credentials or connection strings.
+- Only after that rehearsal passed, a fresh live backup was retained at
+  `Backups/P2-05/personal_business_manager_pre_baseline_20260731_093647Z.sql`
+  (70,678 bytes; SHA-256
+  `52a52b91f2b7d6d88da32d0310100e02a1d3d110b2e8b0ffc80bacaf147258eb`).
+- The real `personal_business_manager` database then passed read-only
+  preflight and the same guarded baseline. Live history contains exactly
+  versions `1` through `13`; `schema_information` contains its singleton at
+  version `13` with verification and update timestamps. Post-baseline
+  `status`, `verify`, direct read-only inspection, and separate `migrate` all
+  passed with no pending migration and unchanged schema/data fingerprints.
+- Live evidence logs are
+  `live_baseline_d3853ff_20260731_093647Z.log` (SHA-256
+  `0fc1847aadfdbfec883d961a1e46ceea57cf31dfca4ea67fc13898c071c66647`)
+  and `live_postverify_d3853ff_20260731_093647Z.log` (SHA-256
+  `e8ba5b95982f054e19f545da7de82a66ad8733f4ad79e9646b05555adc5a067b`).
+- All three disposable databases were removed after evidence capture. Both
+  backups and all evidence logs were retained outside Git.
 
 ---
 
