@@ -1658,11 +1658,17 @@ public static class UiDimensions
     public const int StandardControlHeight = 36;
     public const int CompactControlHeight = 32;
     public const int LargeControlHeight = 44;
+    public const int InputHorizontalPadding = 12;
+    public const int MultilineInputMinimumHeight = 96;
+    public const int LongDescriptionMinimumHeight = 128;
     public const int StandardButtonMinimumWidth = 88;
     public const int LargeButtonMinimumWidth = 120;
+    public const int DialogActionButtonMinimumWidth = 96;
     public const int SidebarNavigationHeight = 40;
     public const int TabHeaderHeight = 40;
-    public const int TabHeaderWidth = 128;
+    public const int TabHeaderWidth = 160;
+    public const int FilterBarMinimumHeight = 60;
+    public const int FilterRowVerticalPadding = 12;
     public const int GridHeaderHeight = 40;
     public const int GridRowHeight = 36;
     public const int ComfortableGridRowHeight = 48;
@@ -1673,6 +1679,11 @@ public static class UiDimensions
     public const int TimerStripHeight = 48;
     public const int SummaryCardHeight = 112;
     public const int SummaryCardWidth = 240;
+    public const int StatusBadgeMinimumHeight = 24;
+    public const int StatusBadgeHorizontalPadding = 12;
+    public const int EmptyStateMinimumHeight = 200;
+    public const int ValidationSummaryMinimumHeight = 64;
+    public const int ConfirmationDialogWidth = 440;
     public const int MinimumWindowWidth = 1100;
     public const int MinimumWindowHeight = 700;
     public const int ResponsiveWidth = 1180;
@@ -1680,6 +1691,8 @@ public static class UiDimensions
     public const int FocusBorderWidth = 2;
     public const int SelectionIndicatorWidth = 3;
     public const int CornerRadius = 6;
+    public const int DialogCornerRadius = 8;
+    public const int StandardIconSize = 16;
 }
 ```
 
@@ -1864,15 +1877,17 @@ When implementing or changing UI:
 - [x] Add or complete `ThemeManager`.
 - [x] Add or complete `ControlStyler`.
 - [x] Add `DpiScaler` where custom drawing requires it.
-- [ ] Complete the required themed controls.
-- [ ] Add a development-only control gallery or equivalent visual test form.
+- [x] Complete the required themed controls.
+- [x] Add a development-only control gallery or equivalent visual test form.
 - [x] Verify common screens at 100%, 125% and 150%.
 - [x] Confirm no new screen contains hard-coded theme values.
 
 P2-09 completed the shared infrastructure and verified the current main shell
-and Dashboard at the required scale factors. The two remaining unchecked items
-belong to P2-10 and keep the overall matching Phase 2 implementation decision
-pending until the reusable control set and its gallery are complete.
+and Dashboard at the required scale factors. P2-10 completed the required-now
+reusable control set and its development-only gallery, including automated and
+visually inspected renders at all three required scale factors. `CurrencyTextBox`
+and `DurationTextBox` retain their explicitly approved deferral until first
+functional use.
 
 ---
 
@@ -1887,7 +1902,7 @@ Page and shell dimensions:           APPROVED
 Interaction states:                  APPROVED
 DPI and minimum-window rules:        APPROVED
 P1-05 documentation gate:            PASS
-Matching Phase 2 C# implementation:  PENDING
+Matching Phase 2 C# implementation:  PASS
 ```
 
 No new screen should need to invent its own colour, font size, spacing value, standard control height, grid row height, border width or common interaction-state styling.

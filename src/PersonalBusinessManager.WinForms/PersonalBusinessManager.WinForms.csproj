@@ -13,7 +13,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Dialogs\" />
     <Folder Include="Navigation\" />
     <Folder Include="Formatting\" />
     <Folder Include="Validation\" />

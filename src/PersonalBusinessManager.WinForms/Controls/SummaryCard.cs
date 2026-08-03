@@ -7,6 +7,11 @@ public sealed class SummaryCard : Panel, IThemeAwareControl
     private readonly Label _headingLabel;
     private readonly Label _valueLabel;
 
+    public SummaryCard()
+        : this("Summary", "0")
+    {
+    }
+
     public SummaryCard(string heading, string value)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(heading);

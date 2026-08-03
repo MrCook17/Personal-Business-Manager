@@ -33,10 +33,16 @@ public static class ThemeManager
         ThemePalette.AccentHover.ToArgb(),
         ThemePalette.AccentPressed.ToArgb(),
         ThemePalette.AccentSoft.ToArgb(),
+        ThemePalette.Success.ToArgb(),
         ThemePalette.SuccessSoft.ToArgb(),
+        ThemePalette.Warning.ToArgb(),
         ThemePalette.WarningSoft.ToArgb(),
+        ThemePalette.Danger.ToArgb(),
+        ThemePalette.DangerText.ToArgb(),
         ThemePalette.DangerSoft.ToArgb(),
+        ThemePalette.Information.ToArgb(),
         ThemePalette.InformationSoft.ToArgb(),
+        ThemePalette.Neutral.ToArgb(),
         ThemePalette.NeutralSoft.ToArgb(),
     ];
 
@@ -176,7 +182,7 @@ public static class ThemeManager
             issues.Add(new ThemeValidationIssue(
                 control.GetType().Name,
                 GetSafeControlName(control),
-                "Background does not use an approved theme token."));
+                $"Background {ToHex(control.BackColor)} does not use an approved theme token."));
         }
 
         if (RequiresThemedForeground(control)
@@ -186,7 +192,7 @@ public static class ThemeManager
             issues.Add(new ThemeValidationIssue(
                 control.GetType().Name,
                 GetSafeControlName(control),
-                "Text does not use an approved theme token."));
+                $"Text {ToHex(control.ForeColor)} does not use an approved theme token."));
         }
 
         foreach (Control child in control.Controls)
@@ -197,6 +203,12 @@ public static class ThemeManager
 
     private static bool RequiresThemedBackground(Control control)
     {
+        if (control is TabControl
+            && control is IThemeAwareControl)
+        {
+            return false;
+        }
+
         return control is Form
             or UserControl
             or Panel
@@ -225,8 +237,18 @@ public static class ThemeManager
 
     private static string GetSafeControlName(Control control)
     {
-        return string.IsNullOrWhiteSpace(control.Name)
+        if (!string.IsNullOrWhiteSpace(control.Name))
+        {
+            return control.Name;
+        }
+
+        return string.IsNullOrWhiteSpace(control.Text)
             ? "<unnamed>"
-            : control.Name;
+            : $"<unnamed: {control.Text}>";
+    }
+
+    private static string ToHex(Color color)
+    {
+        return $"#{color.R:X2}{color.G:X2}{color.B:X2}";
     }
 }

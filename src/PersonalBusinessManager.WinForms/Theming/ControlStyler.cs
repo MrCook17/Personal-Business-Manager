@@ -240,6 +240,7 @@ public static class ControlStyler
         ArgumentNullException.ThrowIfNull(tabs);
 
         tabs.DrawMode = TabDrawMode.OwnerDrawFixed;
+        tabs.Appearance = TabAppearance.FlatButtons;
         tabs.SizeMode = TabSizeMode.Fixed;
         tabs.BackColor = ThemePalette.PanelBackground;
         tabs.ForeColor = ThemePalette.PrimaryText;
@@ -541,11 +542,14 @@ public static class ControlStyler
     private sealed class TabStyleRegistration
     {
         private readonly TabControl _tabs;
+        private int _hoveredIndex = -1;
 
         public TabStyleRegistration(TabControl tabs)
         {
             _tabs = tabs;
             _tabs.DrawItem += DrawItem;
+            _tabs.MouseMove += MouseMove;
+            _tabs.MouseLeave += (_, _) => SetHoveredIndex(-1);
             _tabs.ControlAdded += (_, eventArgs) =>
             {
                 if (eventArgs.Control is TabPage page)
@@ -562,11 +566,14 @@ public static class ControlStyler
             DrawItemEventArgs eventArgs)
         {
             bool selected = eventArgs.Index == _tabs.SelectedIndex;
+            bool hovered = eventArgs.Index == _hoveredIndex;
             Rectangle bounds = eventArgs.Bounds;
 
             using var backgroundBrush = new SolidBrush(
                 selected
                     ? ThemePalette.AccentSoft
+                    : hovered
+                        ? ThemePalette.InputHoverBackground
                     : ThemePalette.PanelBackground);
             eventArgs.Graphics.FillRectangle(
                 backgroundBrush,
@@ -579,6 +586,8 @@ public static class ControlStyler
                 bounds,
                 selected
                     ? ThemePalette.PrimaryText
+                    : hovered
+                        ? ThemePalette.PrimaryText
                     : ThemePalette.SecondaryText,
                 TextFormatFlags.HorizontalCenter
                     | TextFormatFlags.VerticalCenter
@@ -612,6 +621,47 @@ public static class ControlStyler
                     selected
                         ? ThemePalette.AccentSoft
                         : ThemePalette.PanelBackground);
+            }
+        }
+
+        private void MouseMove(
+            object? sender,
+            MouseEventArgs eventArgs)
+        {
+            int index = -1;
+
+            for (int candidate = 0;
+                candidate < _tabs.TabCount;
+                candidate++)
+            {
+                if (_tabs.GetTabRect(candidate).Contains(eventArgs.Location))
+                {
+                    index = candidate;
+                    break;
+                }
+            }
+
+            SetHoveredIndex(index);
+        }
+
+        private void SetHoveredIndex(int index)
+        {
+            if (_hoveredIndex == index)
+            {
+                return;
+            }
+
+            int previous = _hoveredIndex;
+            _hoveredIndex = index;
+
+            if (previous >= 0 && previous < _tabs.TabCount)
+            {
+                _tabs.Invalidate(_tabs.GetTabRect(previous));
+            }
+
+            if (index >= 0 && index < _tabs.TabCount)
+            {
+                _tabs.Invalidate(_tabs.GetTabRect(index));
             }
         }
     }

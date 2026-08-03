@@ -3,39 +3,79 @@ using PersonalBusinessManager.WinForms.Theming;
 
 namespace PersonalBusinessManager.WinForms.Controls;
 
+[DefaultEvent(nameof(Click))]
+[DefaultProperty(nameof(Text))]
+[DesignerCategory("Code")]
 public sealed class DarkButton : Button, IThemeAwareControl
 {
     private bool _isSelected;
     private bool _isHovered;
     private bool _isPressed;
+    private bool _isNavigationItem;
+    private ButtonVariant _variant = ButtonVariant.Secondary;
+    private ControlSize _sizeVariant = ControlSize.Standard;
 
     public DarkButton()
     {
         AutoSize = false;
-        Height = UiDimensions.SidebarNavigationHeight;
-        Width = UiDimensions.ExpandedSidebarWidth
-            - (UiSpacing.Space16 * 2);
-        MinimumSize = new Size(
-            0,
-            UiDimensions.SidebarNavigationHeight);
         FlatStyle = FlatStyle.Flat;
-        FlatAppearance.BorderSize = 0;
         Font = UiFonts.Button;
-        TextAlign = ContentAlignment.MiddleLeft;
-        Padding = new Padding(
-            UiSpacing.Space16,
-            0,
-            UiSpacing.Space8,
-            0);
+        TextAlign = ContentAlignment.MiddleCenter;
         TabStop = true;
         UseVisualStyleBackColor = false;
 
         ApplyTheme();
     }
 
-    [Browsable(false)]
-    [DesignerSerializationVisibility(
-        DesignerSerializationVisibility.Hidden)]
+    [DefaultValue(ButtonVariant.Secondary)]
+    public ButtonVariant Variant
+    {
+        get => _variant;
+        set
+        {
+            if (_variant == value)
+            {
+                return;
+            }
+
+            _variant = value;
+            ApplyTheme();
+        }
+    }
+
+    [DefaultValue(ControlSize.Standard)]
+    public ControlSize SizeVariant
+    {
+        get => _sizeVariant;
+        set
+        {
+            if (_sizeVariant == value)
+            {
+                return;
+            }
+
+            _sizeVariant = value;
+            ApplyTheme();
+        }
+    }
+
+    [DefaultValue(false)]
+    public bool IsNavigationItem
+    {
+        get => _isNavigationItem;
+        set
+        {
+            if (_isNavigationItem == value)
+            {
+                return;
+            }
+
+            _isNavigationItem = value;
+            ApplyTheme();
+        }
+    }
+
+    [DefaultValue(false)]
     public bool IsSelected
     {
         get => _isSelected;
@@ -48,7 +88,6 @@ public sealed class DarkButton : Button, IThemeAwareControl
 
             _isSelected = value;
             ApplyTheme();
-            Invalidate();
         }
     }
 
@@ -56,36 +95,66 @@ public sealed class DarkButton : Button, IThemeAwareControl
     {
         Font = UiFonts.Button;
         Cursor = Enabled ? Cursors.Hand : Cursors.Default;
+        TabStop = Enabled;
+        ApplyDimensions();
+
+        (Color background, Color foreground, Color border) =
+            GetBaseColors();
 
         if (!Enabled)
         {
-            BackColor = ThemePalette.InputDisabledBackground;
-            ForeColor = ThemePalette.DisabledText;
-            return;
+            background = ThemePalette.InputDisabledBackground;
+            foreground = ThemePalette.DisabledText;
+            border = ThemePalette.BorderSubtle;
         }
-
-        if (_isPressed)
+        else if (_isPressed)
         {
-            BackColor = IsSelected
-                ? ThemePalette.AccentPressed
-                : ThemePalette.InputBackground;
-            ForeColor = ThemePalette.PrimaryText;
-            return;
+            background = Variant switch
+            {
+                ButtonVariant.Primary => ThemePalette.AccentPressed,
+                ButtonVariant.Danger => ThemePalette.DangerBorder,
+                _ => ThemePalette.InputBackground,
+            };
+            foreground = Variant is ButtonVariant.Primary
+                or ButtonVariant.Danger
+                ? ThemePalette.InverseText
+                : ThemePalette.PrimaryText;
         }
-
-        if (_isHovered)
+        else if (_isHovered)
         {
-            BackColor = ThemePalette.InputHoverBackground;
-            ForeColor = ThemePalette.PrimaryText;
-            return;
+            background = Variant switch
+            {
+                ButtonVariant.Primary => ThemePalette.AccentHover,
+                ButtonVariant.Secondary => ThemePalette.RaisedPanel,
+                ButtonVariant.Ghost => ThemePalette.InputHoverBackground,
+                ButtonVariant.Danger => ThemePalette.DangerText,
+                _ => background,
+            };
+            foreground = Variant is ButtonVariant.Primary
+                or ButtonVariant.Danger
+                ? ThemePalette.InverseText
+                : ThemePalette.PrimaryText;
+            border = Variant == ButtonVariant.Ghost
+                ? ThemePalette.BorderStrong
+                : border;
         }
 
-        BackColor = IsSelected
-            ? ThemePalette.AccentSoft
-            : ThemePalette.SidebarBackground;
-        ForeColor = IsSelected
-            ? ThemePalette.PrimaryText
-            : ThemePalette.SecondaryText;
+        BackColor = background;
+        ForeColor = foreground;
+        FlatAppearance.BorderColor = Focused
+            ? ThemePalette.FocusBorder
+            : border;
+        FlatAppearance.BorderSize = Focused
+            ? DpiScaler.Scale(
+                UiDimensions.FocusBorderWidth,
+                DeviceDpi)
+            : IsNavigationItem || Variant == ButtonVariant.Ghost
+                ? 0
+                : DpiScaler.Scale(
+                    UiDimensions.StandardBorderWidth,
+                    DeviceDpi);
+
+        Invalidate();
     }
 
     protected override void OnMouseEnter(EventArgs e)
@@ -120,57 +189,138 @@ public sealed class DarkButton : Button, IThemeAwareControl
     protected override void OnEnabledChanged(EventArgs e)
     {
         base.OnEnabledChanged(e);
-        TabStop = Enabled;
         ApplyTheme();
-        Invalidate();
+    }
+
+    protected override void OnTextChanged(EventArgs e)
+    {
+        base.OnTextChanged(e);
+        ApplyTheme();
     }
 
     protected override void OnGotFocus(EventArgs e)
     {
         base.OnGotFocus(e);
-        Invalidate();
+        ApplyTheme();
     }
 
     protected override void OnLostFocus(EventArgs e)
     {
         base.OnLostFocus(e);
-        Invalidate();
+        ApplyTheme();
     }
 
     protected override void OnPaint(PaintEventArgs pevent)
     {
         base.OnPaint(pevent);
 
-        if (IsSelected)
+        if (!IsNavigationItem || !IsSelected)
         {
-            int indicatorWidth = DpiScaler.Scale(
-                UiDimensions.SelectionIndicatorWidth,
-                DeviceDpi);
-            using var indicatorBrush = new SolidBrush(
-                ThemePalette.SelectionIndicator);
-            pevent.Graphics.FillRectangle(
-                indicatorBrush,
-                ClientRectangle.Left,
-                ClientRectangle.Top,
-                indicatorWidth,
-                ClientRectangle.Height);
+            return;
         }
 
-        if (Focused && ShowFocusCues)
+        int indicatorWidth = DpiScaler.Scale(
+            UiDimensions.SelectionIndicatorWidth,
+            DeviceDpi);
+        using var indicatorBrush = new SolidBrush(
+            ThemePalette.SelectionIndicator);
+        pevent.Graphics.FillRectangle(
+            indicatorBrush,
+            ClientRectangle.Left,
+            ClientRectangle.Top,
+            indicatorWidth,
+            ClientRectangle.Height);
+    }
+
+    private void ApplyDimensions()
+    {
+        if (IsNavigationItem)
         {
-            int focusWidth = DpiScaler.Scale(
-                UiDimensions.FocusBorderWidth,
-                DeviceDpi);
-            Rectangle focusBounds = Rectangle.Inflate(
-                ClientRectangle,
-                -focusWidth,
-                -focusWidth);
-            using var focusPen = new Pen(
-                ThemePalette.FocusBorder,
-                focusWidth);
-            pevent.Graphics.DrawRectangle(
-                focusPen,
-                focusBounds);
+            Height = UiDimensions.SidebarNavigationHeight;
+            Width = UiDimensions.ExpandedSidebarWidth
+                - (UiSpacing.Space16 * 2);
+            MinimumSize = new Size(
+                0,
+                UiDimensions.SidebarNavigationHeight);
+            Padding = new Padding(
+                UiSpacing.Space16,
+                0,
+                UiSpacing.Space8,
+                0);
+            TextAlign = ContentAlignment.MiddleLeft;
+            return;
         }
+
+        (int height, int minimumWidth, int horizontalPadding) =
+            SizeVariant switch
+            {
+                ControlSize.Compact =>
+                    (UiDimensions.CompactControlHeight,
+                        UiDimensions.CompactControlHeight,
+                        UiSpacing.Space8),
+                ControlSize.Standard =>
+                    (UiDimensions.StandardControlHeight,
+                        UiDimensions.StandardButtonMinimumWidth,
+                        UiSpacing.Space16),
+                ControlSize.Large =>
+                    (UiDimensions.LargeControlHeight,
+                        UiDimensions.LargeButtonMinimumWidth,
+                        UiSpacing.Space24),
+                _ => throw new ArgumentOutOfRangeException(
+                    nameof(SizeVariant)),
+            };
+
+        Height = height;
+        MinimumSize = new Size(minimumWidth, height);
+        Padding = new Padding(horizontalPadding, 0, horizontalPadding, 0);
+        TextAlign = ContentAlignment.MiddleCenter;
+
+        Size textSize = TextRenderer.MeasureText(
+            Text,
+            UiFonts.Button,
+            Size.Empty,
+            TextFormatFlags.NoPadding | TextFormatFlags.SingleLine);
+        int preferredWidth = textSize.Width
+            + (horizontalPadding * 2)
+            + (UiDimensions.FocusBorderWidth * 2)
+            + UiSpacing.Space24;
+        Width = Math.Max(Width, Math.Max(minimumWidth, preferredWidth));
+    }
+
+    private (Color Background, Color Foreground, Color Border)
+        GetBaseColors()
+    {
+        if (IsNavigationItem)
+        {
+            return IsSelected
+                ? (ThemePalette.AccentSoft,
+                    ThemePalette.PrimaryText,
+                    ThemePalette.AccentSoft)
+                : (ThemePalette.SidebarBackground,
+                    ThemePalette.SecondaryText,
+                    ThemePalette.SidebarBackground);
+        }
+
+        return Variant switch
+        {
+            ButtonVariant.Primary =>
+                (ThemePalette.Accent,
+                    ThemePalette.InverseText,
+                    ThemePalette.Accent),
+            ButtonVariant.Secondary =>
+                (ThemePalette.RaisedPanel,
+                    ThemePalette.PrimaryText,
+                    ThemePalette.BorderDefault),
+            ButtonVariant.Ghost =>
+                (Parent?.BackColor ?? ThemePalette.PanelBackground,
+                    ThemePalette.SecondaryText,
+                    ThemePalette.BorderSubtle),
+            ButtonVariant.Danger =>
+                (ThemePalette.Danger,
+                    ThemePalette.InverseText,
+                    ThemePalette.Danger),
+            _ => throw new ArgumentOutOfRangeException(
+                nameof(Variant)),
+        };
     }
 }

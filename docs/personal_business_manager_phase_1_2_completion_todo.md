@@ -1176,18 +1176,18 @@ Theming/DpiScaler.cs
 
 - [x] `DarkButton`
 - [x] `SummaryCard`
-- [ ] `DarkTextBox`
-- [ ] `DarkComboBox`
-- [ ] `DarkDateTimePicker`
-- [ ] `DarkDataGridView`
-- [ ] `DarkTabControl`
-- [ ] `PageHeader`
-- [ ] `FilterBar`
-- [ ] `StatusBadge`
-- [ ] `EmptyStatePanel`
-- [ ] `LoadingOverlay`
-- [ ] `ValidationMessage`
-- [ ] `ConfirmDialog`
+- [x] `DarkTextBox`
+- [x] `DarkComboBox`
+- [x] `DarkDateTimePicker`
+- [x] `DarkDataGridView`
+- [x] `DarkTabControl`
+- [x] `PageHeader`
+- [x] `FilterBar`
+- [x] `StatusBadge`
+- [x] `EmptyStatePanel`
+- [x] `LoadingOverlay`
+- [x] `ValidationMessage`
+- [x] `ConfirmDialog`
 
 ### Reasonably deferred until first use
 
@@ -1196,19 +1196,60 @@ Theming/DpiScaler.cs
 
 **Control requirements:**
 
-- [ ] Theme values are centralised.
-- [ ] Keyboard focus is visible.
-- [ ] Disabled states are readable.
-- [ ] Designer support does not create analyzer errors.
-- [ ] Controls remain usable under DPI scaling.
-- [ ] DataGridView uses double buffering.
-- [ ] Empty/loading/error states are explicit.
+- [x] Theme values are centralised.
+- [x] Keyboard focus is visible.
+- [x] Disabled states are readable.
+- [x] Designer support does not create analyzer errors.
+- [x] Controls remain usable under DPI scaling.
+- [x] DataGridView uses double buffering.
+- [x] Empty/loading/error states are explicit.
 
 **Verification:**
 
-- [ ] Add a development-only control gallery page or manual test form.
-- [ ] Verify controls visually at common scaling levels.
-- [ ] Remove the gallery from normal navigation if it is not intended for production.
+- [x] Add a development-only control gallery page or manual test form.
+- [x] Verify controls visually at common scaling levels.
+- [x] Remove the gallery from normal navigation if it is not intended for production.
+
+**Completion evidence (3 August 2026):**
+
+- Added the complete required-now control set: themed text, combo and date
+  inputs; buffered grid and owner-painted tabs; reusable page header and filter
+  bar; six-role status badges; explicit empty/error/loading/validation states;
+  and severity-aware confirmation dialogs with optional exact typed
+  confirmation for dangerous actions.
+- `DarkButton` now supports primary, secondary, ghost and danger variants,
+  compact/standard/large sizing, readable disabled/hover/pressed/focus states,
+  and the selected navigation treatment already used by `MainShellForm`.
+  `SummaryCard` now also has a designer-safe parameterless constructor.
+- Theme colours, typography, spacing, component dimensions and semantic-role
+  mappings remain centralised. Typed controls implement `IThemeAwareControl`,
+  are parameterless/designer constructible, expose meaningful accessibility
+  text or roles, and do not create new analyzer warnings.
+- `DarkDataGridView` uses approved row/header/selection styles and direct double
+  buffering. `DarkComboBox` owner-draws its list. `DarkDateTimePicker` renders a
+  fully dark date field in the approved `dd/MM/yyyy` form and uses a native
+  `MonthCalendar` only for the operating-system popup, as allowed by the
+  documented native-control limitation policy.
+- `ThemeControlGalleryForm` provides three development-only pages covering
+  inputs/actions, data/status and states/feedback. It is intentionally absent
+  from normal application navigation and is marked development-only for code
+  browsing and designer purposes.
+- Automated render coverage captures all three gallery pages and the dangerous
+  typed-confirmation dialog at 96, 120 and 144 DPI (100%, 125% and 150%). The
+  captures were inspected for clipping, dark surfaces, explicit states,
+  readable controls and visible focus/error treatments.
+- The Windows UI suite now contains 41 passing tests, including 28 P2-10 cases
+  for designer construction, interaction states, semantic mappings, typed
+  confirmation, gallery composition, theme validation, double buffering and
+  multi-scale rendering.
+- The complete credential-free solution run passes 136 tests: 38 Core, 57
+  non-database Infrastructure/integration and 41 WinForms tests. The eight
+  explicitly guarded MariaDB cases skip when the local test database is not
+  available.
+- `CurrencyTextBox` and `DurationTextBox` remain deliberately unchecked and
+  deferred under this task's approved “until first use” rule. They must be
+  completed before finance-entry and time-entry editing respectively and must
+  follow `docs/design/dark_theme_system.md` when introduced.
 
 ---
 
@@ -1474,7 +1515,7 @@ Phase 2 is complete only when all of the following are true:
 - [ ] Existing schema is safely baselined.
 - [x] Meaningful unit and integration tests pass.
 - [ ] Main dark shell infrastructure is complete.
-- [ ] Minimum reusable themed controls exist.
+- [x] Minimum reusable themed controls exist.
 - [ ] List/search/paging foundation exists.
 - [ ] Build warnings are resolved or justified.
 - [ ] Git working tree is clean.

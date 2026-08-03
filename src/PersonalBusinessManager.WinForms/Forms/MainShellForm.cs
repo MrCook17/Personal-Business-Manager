@@ -443,6 +443,7 @@ public sealed class MainShellForm : Form
         {
             Text = pageTitle,
             Margin = Padding.Empty,
+            IsNavigationItem = true,
         };
 
         button.Click += (_, _) =>

@@ -5,11 +5,17 @@ public static class UiDimensions
     public const int StandardControlHeight = 36;
     public const int CompactControlHeight = 32;
     public const int LargeControlHeight = 44;
+    public const int InputHorizontalPadding = 12;
+    public const int MultilineInputMinimumHeight = 96;
+    public const int LongDescriptionMinimumHeight = 128;
     public const int StandardButtonMinimumWidth = 88;
     public const int LargeButtonMinimumWidth = 120;
+    public const int DialogActionButtonMinimumWidth = 96;
     public const int SidebarNavigationHeight = 40;
     public const int TabHeaderHeight = 40;
-    public const int TabHeaderWidth = 128;
+    public const int TabHeaderWidth = 160;
+    public const int FilterBarMinimumHeight = 60;
+    public const int FilterRowVerticalPadding = 12;
     public const int GridHeaderHeight = 40;
     public const int GridRowHeight = 36;
     public const int ComfortableGridRowHeight = 48;
@@ -20,6 +26,11 @@ public static class UiDimensions
     public const int TimerStripHeight = 48;
     public const int SummaryCardHeight = 112;
     public const int SummaryCardWidth = 240;
+    public const int StatusBadgeMinimumHeight = 24;
+    public const int StatusBadgeHorizontalPadding = 12;
+    public const int EmptyStateMinimumHeight = 200;
+    public const int ValidationSummaryMinimumHeight = 64;
+    public const int ConfirmationDialogWidth = 440;
     public const int MinimumWindowWidth = 1100;
     public const int MinimumWindowHeight = 700;
     public const int ResponsiveWidth = 1180;
@@ -27,4 +38,6 @@ public static class UiDimensions
     public const int FocusBorderWidth = 2;
     public const int SelectionIndicatorWidth = 3;
     public const int CornerRadius = 6;
+    public const int DialogCornerRadius = 8;
+    public const int StandardIconSize = 16;
 }
