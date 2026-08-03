@@ -9,9 +9,7 @@
   <ItemGroup>
     <Folder Include="Application\Services\" />
     <Folder Include="Application\Commands\" />
-    <Folder Include="Application\Queries\" />
     <Folder Include="Application\Dtos\" />
-    <Folder Include="Application\Filters\" />
     <Folder Include="Application\Validation\" />
     <Folder Include="Common\" />
     <Folder Include="Domain\" />

@@ -15,7 +15,14 @@ public sealed class DarkDataGridView : DataGridView, IThemeAwareControl
                 | ControlStyles.OptimizedDoubleBuffer,
             true);
         DoubleBuffered = true;
+        AllowUserToAddRows = false;
+        AllowUserToDeleteRows = false;
+        AllowUserToResizeRows = false;
+        AutoGenerateColumns = false;
+        ReadOnly = true;
+        VirtualMode = false;
         AccessibleRole = AccessibleRole.Table;
+        AccessibleName = "Records";
         ApplyTheme();
     }
 

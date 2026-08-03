@@ -1347,37 +1347,79 @@ Create reusable foundation types without implementing customer/job features earl
 
 **Core foundation:**
 
-- [ ] `PagedResult<T>`.
-- [ ] Paging request model.
-- [ ] Sort direction.
-- [ ] Base filter conventions.
-- [ ] Maximum page-size validation.
-- [ ] Cancellation-token conventions.
+- [x] `PagedResult<T>`.
+- [x] Paging request model.
+- [x] Sort direction.
+- [x] Base filter conventions.
+- [x] Maximum page-size validation.
+- [x] Cancellation-token conventions.
 
 **WinForms foundation:**
 
-- [ ] `FilterBar`.
-- [ ] Debounced search helper, approximately 250–400 ms.
-- [ ] Cancellation of obsolete requests.
-- [ ] Paging control.
-- [ ] Loading state.
-- [ ] Empty state.
-- [ ] Error/retry state.
-- [ ] `DarkDataGridView`.
+- [x] `FilterBar`.
+- [x] Debounced search helper, approximately 250–400 ms.
+- [x] Cancellation of obsolete requests.
+- [x] Paging control.
+- [x] Loading state.
+- [x] Empty state.
+- [x] Error/retry state.
+- [x] `DarkDataGridView`.
 
 **Infrastructure foundation:**
 
-- [ ] Keyset-pagination SQL conventions.
-- [ ] Explicit deterministic sorting.
-- [ ] Lightweight list projections.
-- [ ] Command timeout convention.
+- [x] Keyset-pagination SQL conventions.
+- [x] Explicit deterministic sorting.
+- [x] Lightweight list projections.
+- [x] Command timeout convention.
 
 **Verification:**
 
-- [ ] A small test/demo query can page without loading unlimited rows.
-- [ ] Search cancellation works.
-- [ ] No UI freeze during async loading.
-- [ ] No feature-specific SQL appears in WinForms.
+- [x] A small test/demo query can page without loading unlimited rows.
+- [x] Search cancellation works.
+- [x] No UI freeze during async loading.
+- [x] No feature-specific SQL appears in WinForms.
+
+**Completion evidence (3 August 2026):**
+
+- Core now provides validated `PagingRequest`, `PagedResult<T>`,
+  `SortDirection`, `ListFilter` and
+  `IPagedListQuery<TFilter, TListItem>`. Requests default to 100 rows, reject
+  page sizes above 200, calculate a bounded `PageSize + 1` look-ahead limit,
+  normalise shared search/archive state and require cancellation tokens on
+  paged-query contracts.
+- Infrastructure now provides `ListQueryConventions`: parameterised Dapper
+  commands receive a required cancellation token and the shared 30-second
+  timeout, sort direction maps only to whitelisted `ASC`/`DESC` keywords, and
+  keyset page materialisation consumes at most one look-ahead row before
+  returning no more than the requested page size.
+- `docs/development/list_search_paging_conventions.md` records the approved
+  layer boundary, typed-filter rules, 50/100 row defaults, 200-row maximum,
+  deterministic primary-key tie-breakers, keyset cursor comparisons, limited
+  offset-paging exception, lightweight projections, timeout/cancellation rules,
+  and feature-list verification checklist.
+- The existing themed `FilterBar` and `DarkDataGridView` are joined by
+  `PagingControl`, `DebouncedSearchCoordinator` and `PagedListView`.
+  `PagingControl` presents a range, page number, Previous/Next and validated
+  rows selector. `PagedListView` provides ordinary paged grid binding plus
+  explicit ready, content-only loading/cancel, empty and safe error/retry
+  states.
+- Search debouncing defaults to 300 ms and enforces the approved 250–400 ms
+  range. New searches and list loads cancel obsolete work; stale results cannot
+  replace the current request. Async loading returns control to the UI, and
+  failures expose their exception only through `LoadFailed` for logging while
+  displaying a safe message/reference.
+- A live MariaDB recursive demo query selects a lightweight projection using an
+  explicit `ORDER BY record_id DESC` and parameterised bounded `LIMIT`. It
+  returns 50 rows from a 51-row look-ahead without duplicates or unlimited
+  materialisation. The matching in-memory demo also verifies consecutive
+  keyset pages and exact enumeration bounds.
+- Thirty-six P2-12 test cases pass: 9 Core, 6 Infrastructure/integration and
+  21 WinForms cases. The complete solution run passes all 203 tests: 47 Core,
+  74 Infrastructure/integration and 82 WinForms, with no failures or skips.
+- Ready, loading, empty and error/retry list compositions were rendered and
+  inspected at 96, 120 and 144 DPI. All twelve captures retain the filter bar,
+  explicit textual state, themed controls, accessible paging footer and
+  unclipped content.
 
 ---
 
@@ -1564,7 +1606,7 @@ Phase 2 is complete only when all of the following are true:
 - [x] Meaningful unit and integration tests pass.
 - [x] Main dark shell infrastructure is complete.
 - [x] Minimum reusable themed controls exist.
-- [ ] List/search/paging foundation exists.
+- [x] List/search/paging foundation exists.
 - [ ] Build warnings are resolved or justified.
 - [ ] Git working tree is clean.
 

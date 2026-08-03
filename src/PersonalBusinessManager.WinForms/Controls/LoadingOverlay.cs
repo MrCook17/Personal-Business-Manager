@@ -10,6 +10,7 @@ public sealed class LoadingOverlay : UserControl, IThemeAwareControl
     private readonly Label _messageLabel = new();
     private readonly MarqueeIndicator _indicator = new();
     private readonly DarkButton _cancelButton = new();
+    private readonly TableLayoutPanel _centrePanel = new();
     private readonly System.Windows.Forms.Timer _animationTimer;
     private bool _isActive;
     private bool _canCancel;
@@ -30,19 +31,16 @@ public sealed class LoadingOverlay : UserControl, IThemeAwareControl
         AccessibleName = "Loading";
         Visible = false;
 
-        var centrePanel = new TableLayoutPanel
-        {
-            AutoSize = true,
-            AutoSizeMode = AutoSizeMode.GrowAndShrink,
-            BackColor = ThemePalette.RaisedPanel,
-            ColumnCount = 1,
-            RowCount = 3,
-            Padding = new Padding(UiSpacing.Space24),
-            Margin = Padding.Empty,
-        };
-        centrePanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        centrePanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        centrePanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        _centrePanel.AutoSize = true;
+        _centrePanel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+        _centrePanel.BackColor = ThemePalette.RaisedPanel;
+        _centrePanel.ColumnCount = 1;
+        _centrePanel.RowCount = 3;
+        _centrePanel.Padding = new Padding(UiSpacing.Space24);
+        _centrePanel.Margin = Padding.Empty;
+        _centrePanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        _centrePanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        _centrePanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
         _messageLabel.AutoSize = true;
         _messageLabel.Text = "Loading…";
@@ -68,15 +66,11 @@ public sealed class LoadingOverlay : UserControl, IThemeAwareControl
         _cancelButton.Click += (_, _) =>
             CancelRequested?.Invoke(this, EventArgs.Empty);
 
-        centrePanel.Controls.Add(_messageLabel, 0, 0);
-        centrePanel.Controls.Add(_indicator, 0, 1);
-        centrePanel.Controls.Add(_cancelButton, 0, 2);
-        Controls.Add(centrePanel);
-
-        centrePanel.Location = new Point(
-            Math.Max(0, (ClientSize.Width - centrePanel.Width) / 2),
-            Math.Max(0, (ClientSize.Height - centrePanel.Height) / 2));
-        SizeChanged += (_, _) => CentreContent(centrePanel);
+        _centrePanel.Controls.Add(_messageLabel, 0, 0);
+        _centrePanel.Controls.Add(_indicator, 0, 1);
+        _centrePanel.Controls.Add(_cancelButton, 0, 2);
+        Controls.Add(_centrePanel);
+        CentreContent(_centrePanel);
 
         _animationTimer = new System.Windows.Forms.Timer
         {
@@ -178,6 +172,12 @@ public sealed class LoadingOverlay : UserControl, IThemeAwareControl
             BringToFront();
             _animationTimer.Start();
         }
+    }
+
+    protected override void OnLayout(LayoutEventArgs e)
+    {
+        base.OnLayout(e);
+        CentreContent(_centrePanel);
     }
 
     protected override void OnParentChanged(EventArgs e)

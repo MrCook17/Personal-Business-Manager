@@ -16,7 +16,6 @@
   <ItemGroup>
     <Folder Include="Database\Sql\" />
     <Folder Include="Database\Transactions\" />
-    <Folder Include="Database\Queries\" />
     <Folder Include="Database\Repositories\" />
     <Folder Include="Backups\" />
     <Folder Include="Logging\" />

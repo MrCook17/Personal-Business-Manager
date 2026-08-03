@@ -1669,6 +1669,7 @@ public static class UiDimensions
     public const int TabHeaderWidth = 160;
     public const int FilterBarMinimumHeight = 60;
     public const int FilterRowVerticalPadding = 12;
+    public const int PagingFooterHeight = 48;
     public const int GridHeaderHeight = 40;
     public const int GridRowHeight = 36;
     public const int ComfortableGridRowHeight = 48;
@@ -1898,6 +1899,12 @@ disposal, a content-only loading layer, non-blocking notifications, explicit
 backup health and current-user hosts, keyboard navigation, and an isolated
 persistent timer host. Expanded, compact and loading states were verified at
 100%, 125% and 150% scaling.
+
+P2-12 completed the reusable list composition: a wrapping filter bar, buffered
+dark grid, 48 px paging footer and explicit ready, content-loading, empty and
+error/retry presentations. The paging range and controls remain textual and
+keyboard accessible, filters remain visible during loading, and all four states
+were verified at 100%, 125% and 150% scaling.
 
 ---
 

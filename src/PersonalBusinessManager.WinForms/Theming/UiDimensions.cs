@@ -16,6 +16,7 @@ public static class UiDimensions
     public const int TabHeaderWidth = 160;
     public const int FilterBarMinimumHeight = 60;
     public const int FilterRowVerticalPadding = 12;
+    public const int PagingFooterHeight = 48;
     public const int GridHeaderHeight = 40;
     public const int GridRowHeight = 36;
     public const int ComfortableGridRowHeight = 48;
