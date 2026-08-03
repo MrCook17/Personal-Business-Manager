@@ -12,6 +12,7 @@ public sealed class DarkButton : Button, IThemeAwareControl
     private bool _isHovered;
     private bool _isPressed;
     private bool _isNavigationItem;
+    private bool _isCompactNavigation;
     private ButtonVariant _variant = ButtonVariant.Secondary;
     private ControlSize _sizeVariant = ControlSize.Standard;
 
@@ -71,6 +72,22 @@ public sealed class DarkButton : Button, IThemeAwareControl
             }
 
             _isNavigationItem = value;
+            ApplyTheme();
+        }
+    }
+
+    [DefaultValue(false)]
+    public bool IsCompactNavigation
+    {
+        get => _isCompactNavigation;
+        set
+        {
+            if (_isCompactNavigation == value)
+            {
+                return;
+            }
+
+            _isCompactNavigation = value;
             ApplyTheme();
         }
     }
@@ -237,17 +254,24 @@ public sealed class DarkButton : Button, IThemeAwareControl
         if (IsNavigationItem)
         {
             Height = UiDimensions.SidebarNavigationHeight;
-            Width = UiDimensions.ExpandedSidebarWidth
-                - (UiSpacing.Space16 * 2);
+            Width = IsCompactNavigation
+                ? UiDimensions.CollapsedSidebarWidth
+                    - (UiSpacing.Space8 * 2)
+                : UiDimensions.ExpandedSidebarWidth
+                    - (UiSpacing.Space16 * 2);
             MinimumSize = new Size(
                 0,
                 UiDimensions.SidebarNavigationHeight);
-            Padding = new Padding(
-                UiSpacing.Space16,
-                0,
-                UiSpacing.Space8,
-                0);
-            TextAlign = ContentAlignment.MiddleLeft;
+            Padding = IsCompactNavigation
+                ? Padding.Empty
+                : new Padding(
+                    UiSpacing.Space16,
+                    0,
+                    UiSpacing.Space8,
+                    0);
+            TextAlign = IsCompactNavigation
+                ? ContentAlignment.MiddleCenter
+                : ContentAlignment.MiddleLeft;
             return;
         }
 

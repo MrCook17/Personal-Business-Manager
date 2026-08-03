@@ -1676,6 +1676,7 @@ public static class UiDimensions
     public const int ExpandedSidebarWidth = 224;
     public const int CollapsedSidebarWidth = 64;
     public const int HeaderHeight = 64;
+    public const int HeaderStatusControlWidth = 176;
     public const int TimerStripHeight = 48;
     public const int SummaryCardHeight = 112;
     public const int SummaryCardWidth = 240;
@@ -1684,6 +1685,8 @@ public static class UiDimensions
     public const int EmptyStateMinimumHeight = 200;
     public const int ValidationSummaryMinimumHeight = 64;
     public const int ConfirmationDialogWidth = 440;
+    public const int NotificationMinimumHeight = 56;
+    public const int NotificationMaximumWidth = 420;
     public const int MinimumWindowWidth = 1100;
     public const int MinimumWindowHeight = 700;
     public const int ResponsiveWidth = 1180;
@@ -1888,6 +1891,13 @@ reusable control set and its development-only gallery, including automated and
 visually inspected renders at all three required scale factors. `CurrencyTextBox`
 and `DurationTextBox` retain their explicitly approved deferral until first
 functional use.
+
+P2-11 completed the matching shell behavior: manual and responsive compact
+navigation, safe cancellable page loading, state restoration, deterministic page
+disposal, a content-only loading layer, non-blocking notifications, explicit
+backup health and current-user hosts, keyboard navigation, and an isolated
+persistent timer host. Expanded, compact and loading states were verified at
+100%, 125% and 150% scaling.
 
 ---
 

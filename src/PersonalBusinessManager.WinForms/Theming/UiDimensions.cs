@@ -23,6 +23,7 @@ public static class UiDimensions
     public const int ExpandedSidebarWidth = 224;
     public const int CollapsedSidebarWidth = 64;
     public const int HeaderHeight = 64;
+    public const int HeaderStatusControlWidth = 176;
     public const int TimerStripHeight = 48;
     public const int SummaryCardHeight = 112;
     public const int SummaryCardWidth = 240;
@@ -31,6 +32,8 @@ public static class UiDimensions
     public const int EmptyStateMinimumHeight = 200;
     public const int ValidationSummaryMinimumHeight = 64;
     public const int ConfirmationDialogWidth = 440;
+    public const int NotificationMinimumHeight = 56;
+    public const int NotificationMaximumWidth = 420;
     public const int MinimumWindowWidth = 1100;
     public const int MinimumWindowHeight = 700;
     public const int ResponsiveWidth = 1180;

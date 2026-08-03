@@ -1261,19 +1261,19 @@ Theming/DpiScaler.cs
 
 The current shell already has the main structure. Add the missing planned shell features.
 
-- [ ] Collapsible sidebar.
-- [ ] Compact collapsed navigation state.
-- [ ] Current-user menu placeholder or Phase 3-ready host control.
-- [ ] Backup-status indicator abstraction.
-- [ ] Non-blocking notification area.
-- [ ] Loading overlay.
-- [ ] Safe page-loading API.
-- [ ] Navigation state preservation where appropriate.
-- [ ] Clean page disposal.
-- [ ] No duplicate event subscriptions.
-- [ ] Persistent timer-strip host remains visible.
-- [ ] Minimum window size remains usable.
-- [ ] Keyboard navigation works.
+- [x] Collapsible sidebar.
+- [x] Compact collapsed navigation state.
+- [x] Current-user menu placeholder or Phase 3-ready host control.
+- [x] Backup-status indicator abstraction.
+- [x] Non-blocking notification area.
+- [x] Loading overlay.
+- [x] Safe page-loading API.
+- [x] Navigation state preservation where appropriate.
+- [x] Clean page disposal.
+- [x] No duplicate event subscriptions.
+- [x] Persistent timer-strip host remains visible.
+- [x] Minimum window size remains usable.
+- [x] Keyboard navigation works.
 
 **Current-user menu rule:**
 
@@ -1281,11 +1281,59 @@ Phase 2 may provide the control and placeholder state. Authentication behaviour 
 
 **Verification:**
 
-- [ ] Click every sidebar destination.
-- [ ] Collapse and expand the sidebar.
-- [ ] Confirm title and breadcrumbs update.
-- [ ] Confirm pages are disposed correctly.
-- [ ] Confirm notification and loading controls do not block the UI unnecessarily.
+- [x] Click every sidebar destination.
+- [x] Collapse and expand the sidebar.
+- [x] Confirm title and breadcrumbs update.
+- [x] Confirm pages are disposed correctly.
+- [x] Confirm notification and loading controls do not block the UI unnecessarily.
+
+**Completion evidence (3 August 2026):**
+
+- `MainShellForm` now implements the approved 224 px expanded and 64 px compact
+  sidebar states. It automatically enforces compact mode below the 1180 px
+  responsive threshold, changes content padding from 24 px to 16 px
+  horizontally, retains selected-state indicators, and presents centred compact
+  labels with full accessible names and tooltips.
+- All fourteen approved permanent routes are registered through
+  `ShellPageDefinition`. `NavigateAsync` checks page navigation guards, cancels
+  obsolete work, honours external cancellation, reports safe retry states,
+  updates title/breadcrumb/selection only for the current request, and moves
+  focus into the loaded page.
+- `IShellNavigationStatefulPage` preserves supported filter/list state by route.
+  Outgoing pages are removed and disposed exactly once, newly created pages from
+  obsolete requests are disposed, cancellation sources are replaced and
+  disposed, and repeated theme application does not add navigation handlers.
+- The P2-10 `LoadingOverlay` is hosted only over page content. Sidebar, header,
+  notifications and the persistent 48 px timer host remain available while a
+  cancellable page load is active. Page failures show an explicit error/retry
+  state and a safe reference without exposing exception text or stack traces.
+- `NotificationArea` provides a top-right stack of explicit information,
+  success, warning and error messages. It does not take focus when shown,
+  supports optional actions and dismissal, permits automatic dismissal only for
+  information/success messages, and keeps warnings/errors until dismissed.
+- `BackupStatusIndicator` exposes not-configured, healthy, in-progress, warning
+  and failed states with textual status and semantic styling. Selecting it opens
+  the approved Backups route. `CurrentUserMenu` supplies disabled Lock,
+  Account/Security and Sign-out placeholders until Phase 3 provides a session;
+  no authentication behaviour was implemented early.
+- Sidebar destinations remain in the approved concise order. Up/Down keys move
+  through navigation entries, Tab/Enter remain available, and `Ctrl+B` toggles
+  expanded/compact mode when the responsive minimum does not require compact
+  mode.
+- The WinForms suite now contains 61 passing tests, including 20 P2-11 cases.
+  They cover all destinations, headers/breadcrumbs, manual and automatic
+  collapse, compact accessibility, current-user and backup hosts,
+  notifications, navigation guards/state/disposal, cancellable and obsolete
+  loading, failure/retry presentation, duplicate-handler prevention, keyboard
+  movement, and render validation.
+- The complete credential-free solution run passes 156 tests: 38 Core, 57
+  non-database Infrastructure/integration and 61 WinForms tests. The eight
+  explicitly guarded MariaDB cases skip when the local test database is not
+  available.
+- Expanded, compact and content-loading shells were rendered and inspected at
+  96, 120 and 144 DPI. The nine captures keep text, focus, navigation, header
+  controls, notifications, page content and the timer strip readable and
+  unclipped, with no default light application controls.
 
 ---
 
@@ -1441,9 +1489,9 @@ nothing to commit, working tree clean
 ## Build
 
 - [ ] `dotnet restore` succeeds.
-- [ ] `dotnet build PersonalBusinessManager.slnx` succeeds.
-- [ ] No errors.
-- [ ] No unexplained project-authored warnings.
+- [x] `dotnet build PersonalBusinessManager.slnx` succeeds.
+- [x] No errors.
+- [x] No unexplained project-authored warnings.
 
 ## Tests
 
@@ -1456,15 +1504,15 @@ nothing to commit, working tree clean
 ## Runtime
 
 - [ ] Application starts normally.
-- [ ] Main dark shell displays.
-- [ ] Sidebar collapses and expands.
-- [ ] Every navigation item works.
-- [ ] Title and breadcrumbs update.
+- [x] Main dark shell displays.
+- [x] Sidebar collapses and expands.
+- [x] Every navigation item works.
+- [x] Title and breadcrumbs update.
 - [ ] Database reports connected.
 - [ ] Runtime DB identity is not root.
 - [ ] Logs are created.
 - [ ] Logs contain no credentials.
-- [ ] Application closes cleanly.
+- [x] Application closes cleanly.
 
 ## Database
 
@@ -1514,7 +1562,7 @@ Phase 2 is complete only when all of the following are true:
 - [x] Initial migrations build an empty test database.
 - [ ] Existing schema is safely baselined.
 - [x] Meaningful unit and integration tests pass.
-- [ ] Main dark shell infrastructure is complete.
+- [x] Main dark shell infrastructure is complete.
 - [x] Minimum reusable themed controls exist.
 - [ ] List/search/paging foundation exists.
 - [ ] Build warnings are resolved or justified.
