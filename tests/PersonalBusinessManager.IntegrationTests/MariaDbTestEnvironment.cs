@@ -1,9 +1,19 @@
 using PersonalBusinessManager.DatabaseMigrator;
+using PersonalBusinessManager.Infrastructure.Configuration;
 
 namespace PersonalBusinessManager.IntegrationTests;
 
 internal static class MariaDbTestEnvironment
 {
+    static MariaDbTestEnvironment()
+    {
+        EnvironmentFileLoader.Load();
+    }
+
+    public static void EnsureLoaded()
+    {
+    }
+
     public static string GetRequiredRuntimeConnectionString()
     {
         string connectionString =
@@ -61,6 +71,8 @@ internal sealed class MariaDbTestFactAttribute : FactAttribute
 {
     public MariaDbTestFactAttribute()
     {
+        MariaDbTestEnvironment.EnsureLoaded();
+
         if (string.IsNullOrWhiteSpace(
                 Environment.GetEnvironmentVariable(
                     TestDatabaseSafetyGuard
@@ -81,6 +93,8 @@ internal sealed class MariaDbMigrationTestFactAttribute
 {
     public MariaDbMigrationTestFactAttribute()
     {
+        MariaDbTestEnvironment.EnsureLoaded();
+
         if (string.IsNullOrWhiteSpace(
                 Environment.GetEnvironmentVariable(
                     TestDatabaseSafetyGuard

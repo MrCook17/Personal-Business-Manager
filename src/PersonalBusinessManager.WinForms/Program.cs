@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using PersonalBusinessManager.Infrastructure;
+using PersonalBusinessManager.Infrastructure.Configuration;
 using PersonalBusinessManager.WinForms.Forms;
 using PersonalBusinessManager.WinForms.Theming;
 using Serilog;
@@ -66,6 +67,15 @@ internal static class Program
 
         try
         {
+            string? environmentFilePath =
+                EnvironmentFileLoader.Load();
+
+            Log.Information(
+                "Local environment file is {Presence}.",
+                environmentFilePath is null
+                    ? "absent"
+                    : "loaded");
+
             HostApplicationBuilder builder =
                 Host.CreateApplicationBuilder();
 

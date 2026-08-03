@@ -27,11 +27,11 @@ Do not use `PBM_CONNECTION_STRING`, `PBM_MIGRATION_CONNECTION_STRING`, or
 MariaDB `root` for test execution. Root or another MariaDB administrator is
 needed only for the one-time account creation or credential rotation.
 
-Passwords must be generated independently, stored with Windows Credential
-Manager or Windows DPAPI, and loaded into the two variables only for the test
-process. Do not commit connection strings, use persistent plaintext user
-environment variables, place passwords in command arguments, or print them in
-logs.
+Passwords must be generated independently. Windows Credential Manager or
+Windows DPAPI remains the preferred long-term storage. For local development,
+the repository-root `.env` file may hold the connection strings because it is
+ignored by Git; never commit that file, place passwords in command arguments,
+or print them in logs. Keep only placeholders in the committed `.env.example`.
 
 ## 2. One-time database and account creation
 
@@ -66,10 +66,15 @@ privileges. The migration account has no global administrative privilege and
 no `GRANT OPTION`; its schema privileges are restricted to the approved test
 database.
 
-## 3. Configure one test process
+## 3. Configure local development and tests
 
-Retrieve each password from protected storage and construct these values only
-in the current process:
+Copy `.env.example` to `.env`, retrieve each password from protected storage,
+and replace the placeholders. The WinForms application, database migrator,
+and integration tests load the repository-root file into the current process.
+An explicitly set process value takes precedence; on Windows, `.env` replaces
+a matching value merely inherited from a persistent user environment variable.
+
+Use these values:
 
 ```text
 PBM_TEST_CONNECTION_STRING=
@@ -79,7 +84,9 @@ PBM_TEST_MIGRATION_CONNECTION_STRING=
 Server=127.0.0.1;Port=3306;Database=personal_business_manager_test;User ID=personal_business_test_migrator;Password=<retrieved-migration-password>;SslMode=None;Allow User Variables=true;Connection Timeout=5;Default Command Timeout=30
 ```
 
-Remove both variables from the process after the run.
+`PBM_CONNECTION_STRING` may point to the same restricted test runtime account
+for local UI development. Do not put `root` or another administrative account
+in `.env`. Delete the local file when the credentials are no longer needed.
 
 ## 4. Reset through the migration runner
 

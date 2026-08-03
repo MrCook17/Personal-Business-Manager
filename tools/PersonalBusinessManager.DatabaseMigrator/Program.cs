@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using PersonalBusinessManager.Infrastructure.Configuration;
 using PersonalBusinessManager.Infrastructure.Database.Migrations;
 
 namespace PersonalBusinessManager.DatabaseMigrator;
@@ -22,6 +23,18 @@ internal static class Program
         {
             Console.Error.WriteLine(parseResult.Error);
             WriteUsage();
+            return 2;
+        }
+
+        try
+        {
+            EnvironmentFileLoader.Load();
+        }
+        catch (Exception exception)
+        {
+            Console.Error.WriteLine(
+                "The local environment file could not be loaded: "
+                + exception.Message);
             return 2;
         }
 
